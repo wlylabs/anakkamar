@@ -1,0 +1,91 @@
+"use client";
+
+import { BookHeart, Lock, Shuffle } from "lucide-react";
+import { useMemo, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Textarea } from "@/components/ui/field";
+import { JOURNAL_PROMPTS } from "@/lib/mock-data";
+import { useApp } from "@/lib/store";
+import { formatDateID } from "@/lib/utils";
+
+function dayOfYear() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now.getTime() - start.getTime();
+  return Math.floor(diff / 86_400_000);
+}
+
+export default function JournalPage() {
+  const { state, hydrated, addJournalEntry } = useApp();
+  const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
+  const [content, setContent] = useState("");
+
+  const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
+
+  if (!hydrated) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content.trim()) return;
+    addJournalEntry(prompt, content.trim());
+    setContent("");
+    setPromptIndex((dayOfYear() + 1) % JOURNAL_PROMPTS.length);
+  };
+
+  return (
+    <div className="mx-auto max-w-2xl px-5 pt-8 md:px-8">
+      <h1 className="text-display flex items-center gap-2.5 text-3xl">
+        <BookHeart className="size-7 text-accent" aria-hidden />
+        Journal
+      </h1>
+      <p className="mt-1 flex items-center gap-1.5 text-ink-muted">
+        <Lock className="size-3.5" aria-hidden />
+        Cuma lo yang bisa lihat ini.
+      </p>
+
+      <Card className="mt-6">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-lg font-semibold leading-snug">&ldquo;{prompt}&rdquo;</p>
+          <button
+            type="button"
+            onClick={() => setPromptIndex((i) => (i + 1) % JOURNAL_PROMPTS.length)}
+            className="press flex size-9 shrink-0 items-center justify-center rounded-[var(--radius)] border-2 border-line-soft text-ink-subtle"
+            aria-label="Ganti prompt"
+          >
+            <Shuffle className="size-4" aria-hidden />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-4">
+          <Textarea
+            rows={5}
+            placeholder="Tulis apa aja yang ada di kepala lo..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+          <Button type="submit" variant="accent" className="mt-3 w-full" disabled={!content.trim()}>
+            Simpan
+          </Button>
+        </form>
+      </Card>
+
+      <div className="mt-8">
+        {state.journalEntries.length === 0 ? (
+          <EmptyState title="Belum ada catatan" description="Tulisan pertama lo bakal muncul di sini." />
+        ) : (
+          <div className="space-y-4">
+            {state.journalEntries.map((entry) => (
+              <Card key={entry.id}>
+                <p className="text-xs font-semibold text-ink-subtle">{formatDateID(entry.date)}</p>
+                <p className="mt-1.5 text-sm italic text-ink-muted">&ldquo;{entry.prompt}&rdquo;</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{entry.content}</p>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
