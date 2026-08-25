@@ -28,6 +28,38 @@ export class AiRateLimitError extends Error {
   }
 }
 
+/**
+ * Any non-429 error response from a provider. Carries the provider's own
+ * error message (bad key, decommissioned model, malformed request, outage)
+ * so the API routes can show the user something more useful than a blanket
+ * "check your key" — which is actively misleading when the key is fine and
+ * something else (e.g. a retired model id) is the real cause.
+ */
+export class AiProviderError extends Error {
+  provider: "groq" | "gemini";
+  status: number;
+  detail: string;
+  constructor(provider: "groq" | "gemini", status: number, rawBody: string) {
+    const detail = extractErrorDetail(rawBody);
+    super(`${provider} ${status}: ${detail}`);
+    this.name = "AiProviderError";
+    this.provider = provider;
+    this.status = status;
+    this.detail = detail;
+  }
+}
+
+function extractErrorDetail(rawBody: string): string {
+  try {
+    const parsed = JSON.parse(rawBody);
+    const msg = parsed?.error?.message ?? parsed?.error ?? parsed?.message;
+    if (typeof msg === "string" && msg.trim()) return msg.trim().slice(0, 300);
+  } catch {
+    // Not JSON — fall through to the raw text.
+  }
+  return rawBody.trim().slice(0, 300) || "nggak ada detail dari provider.";
+}
+
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -43,7 +75,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
     }),
   });
   if (res.status === 429) throw new AiRateLimitError("groq");
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new AiProviderError("groq", res.status, await res.text());
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim();
   if (!text) throw new Error("Groq: respons kosong.");
@@ -62,7 +94,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
     }),
   });
   if (res.status === 429) throw new AiRateLimitError("gemini");
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new AiProviderError("gemini", res.status, await res.text());
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("Gemini: respons kosong.");
@@ -106,6 +138,20 @@ export function rateLimitMessage(err: AiRateLimitError) {
   return `Kena limit gratis ${name} buat sekarang. Tunggu beberapa saat, atau isi key provider satunya juga di Profil biar otomatis ganti kalau salah satu lagi limit.`;
 }
 
+/** User-facing copy for AiProviderError — includes the provider's own error text plus a guess at what to do about it. */
+export function providerErrorMessage(err: AiProviderError) {
+  const name = err.provider === "groq" ? "Groq" : "Gemini";
+  const guidance =
+    err.status === 401 || err.status === 403
+      ? "Kemungkinan key-nya salah kepaste, kepotong, atau udah di-revoke — cek lagi di Profil."
+      : err.status === 400
+        ? "Kemungkinan ada yang berubah di sisi provider (misal model yang dipakai app ini udah nggak didukung lagi)."
+        : err.status >= 500
+          ? "Server providernya lagi bermasalah, coba lagi beberapa saat lagi."
+          : "";
+  return `${name} nolak request (${err.status}): ${err.detail}${guidance ? " — " + guidance : ""}`;
+}
+
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
@@ -123,7 +169,7 @@ async function callGroqChat(apiKey: string, systemPrompt: string, turns: ChatTur
     }),
   });
   if (res.status === 429) throw new AiRateLimitError("groq");
-  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new AiProviderError("groq", res.status, await res.text());
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim();
   if (!text) throw new Error("Groq: respons kosong.");
@@ -145,7 +191,7 @@ async function callGeminiChat(apiKey: string, systemPrompt: string, turns: ChatT
     }),
   });
   if (res.status === 429) throw new AiRateLimitError("gemini");
-  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new AiProviderError("gemini", res.status, await res.text());
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error("Gemini: respons kosong.");

@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { AiRateLimitError, generateChatReply, hasServerDefaultKey, rateLimitMessage, type ChatTurn } from "@/lib/ai";
+import {
+  AiProviderError,
+  AiRateLimitError,
+  generateChatReply,
+  hasServerDefaultKey,
+  providerErrorMessage,
+  rateLimitMessage,
+  type ChatTurn,
+} from "@/lib/ai";
 
 const CONTENT_MAX_LENGTH = 4000;
 const KEY_MAX_LENGTH = 200;
@@ -66,8 +74,12 @@ export async function POST(request: Request) {
     if (err instanceof AiRateLimitError) {
       return NextResponse.json({ error: rateLimitMessage(err) }, { status: 429 });
     }
+    if (err instanceof AiProviderError) {
+      console.error("[chat] provider error:", err.message);
+      return NextResponse.json({ error: providerErrorMessage(err) }, { status: 502 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.error("[chat] failed:", message);
-    return NextResponse.json({ error: "Gagal dapet balesan. Cek lagi API key lo di Profil." }, { status: 502 });
+    return NextResponse.json({ error: `Gagal dapet balesan. ${message}` }, { status: 502 });
   }
 }

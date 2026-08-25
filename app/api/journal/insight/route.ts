@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { AiRateLimitError, generateText, hasServerDefaultKey, rateLimitMessage } from "@/lib/ai";
+import {
+  AiProviderError,
+  AiRateLimitError,
+  generateText,
+  hasServerDefaultKey,
+  providerErrorMessage,
+  rateLimitMessage,
+} from "@/lib/ai";
 
 const CONTENT_MAX_LENGTH = 2000;
 const KEY_MAX_LENGTH = 200;
@@ -47,8 +54,12 @@ export async function POST(request: Request) {
     if (err instanceof AiRateLimitError) {
       return NextResponse.json({ error: rateLimitMessage(err) }, { status: 429 });
     }
+    if (err instanceof AiProviderError) {
+      console.error("[journal/insight] provider error:", err.message);
+      return NextResponse.json({ error: providerErrorMessage(err) }, { status: 502 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.error("[journal/insight] failed:", message);
-    return NextResponse.json({ error: "Gagal bikin insight. Cek lagi API key lo di Profil." }, { status: 502 });
+    return NextResponse.json({ error: `Gagal bikin insight. ${message}` }, { status: 502 });
   }
 }
