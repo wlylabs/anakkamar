@@ -6,10 +6,10 @@ import { StoreProvider } from "@/lib/store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <StoreProvider>
-      <PremiumProvider>
+    <PremiumProvider>
+      <StoreProvider>
         <AppShell>{children}</AppShell>
-      </PremiumProvider>
-    </StoreProvider>
+      </StoreProvider>
+    </PremiumProvider>
   );
 }

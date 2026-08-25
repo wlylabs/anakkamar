@@ -63,3 +63,41 @@ create policy "purchases: insert own pending" on public.purchases
 -- Midtrans webhook, running as the service role, which bypasses RLS — users
 -- cannot mark their own purchase as paid, and can't read anyone else's
 -- purchases either.
+
+-- One row per account: the whole app state (projects, habits, journal, ...)
+-- as a single JSON blob, mirroring the shape already kept in localStorage.
+-- This is what lets data survive logout/login and follow the user to a new device.
+create table if not exists public.app_state (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_state enable row level security;
+
+drop policy if exists "app_state: read own" on public.app_state;
+create policy "app_state: read own" on public.app_state
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "app_state: insert own" on public.app_state;
+create policy "app_state: insert own" on public.app_state
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "app_state: update own" on public.app_state;
+create policy "app_state: update own" on public.app_state
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create or replace function public.set_app_state_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists app_state_set_updated_at on public.app_state;
+create trigger app_state_set_updated_at
+  before update on public.app_state
+  for each row execute procedure public.set_app_state_updated_at();

@@ -3,6 +3,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 import { ACHIEVEMENTS, CHALLENGES } from "./mock-data";
+import { usePremium } from "./premium-context";
+import { getSupabaseBrowserClient } from "./supabase/client";
 import type {
   AppState,
   FocusArea,
@@ -18,6 +20,12 @@ import type {
 import { addDays, todayStr, uid } from "./utils";
 
 const STORAGE_KEY = "anak-kamar:v1";
+/** How long to wait after the last edit before pushing state to Supabase. */
+const CLOUD_SYNC_DEBOUNCE_MS = 800;
+
+function mergeIntoAppState(partial: Partial<AppState>): AppState {
+  return { ...initialState(), ...partial, profile: { ...emptyProfile(), ...partial.profile } };
+}
 
 function emptyProfile(): Profile {
   return {
@@ -51,7 +59,7 @@ function loadState(): AppState {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialState();
     const parsed = JSON.parse(raw) as Partial<AppState>;
-    return { ...initialState(), ...parsed, profile: { ...emptyProfile(), ...parsed.profile } };
+    return mergeIntoAppState(parsed);
   } catch {
     return initialState();
   }
@@ -147,10 +155,76 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const loadedOnce = useRef(false);
 
+  const { user } = usePremium();
+  const supabase = getSupabaseBrowserClient();
+
+  // Latest state, readable from effects that shouldn't re-run on every edit.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // "ready" once we know whether this signed-in user has cloud data, and it's
+  // safe to start pushing local edits up without clobbering an in-flight pull.
+  const cloudStatusRef = useRef<"idle" | "loading" | "ready">("idle");
+  const cloudUserIdRef = useRef<string | null>(null);
+  const pushTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     setState(loadState());
     setHydrated(true);
   }, []);
+
+  // Pull cloud state whenever the signed-in user changes (login/logout).
+  useEffect(() => {
+    if (!hydrated) return;
+    const userId = user?.id ?? null;
+    if (cloudUserIdRef.current === userId) return;
+    cloudUserIdRef.current = userId;
+
+    if (pushTimeoutRef.current) {
+      clearTimeout(pushTimeoutRef.current);
+      pushTimeoutRef.current = null;
+    }
+
+    if (!userId || !supabase) {
+      // Logged out: keep working off whatever is in localStorage.
+      cloudStatusRef.current = "ready";
+      return;
+    }
+
+    cloudStatusRef.current = "loading";
+    let cancelled = false;
+
+    void (async () => {
+      const { data, error } = await supabase
+        .from("app_state")
+        .select("data")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error("[store] failed to load cloud state:", error.message);
+      } else if (data?.data) {
+        setState(mergeIntoAppState(data.data as Partial<AppState>));
+      } else {
+        // First time this account signs in: seed the cloud with whatever
+        // habit/project/journal data already exists on this device.
+        const { error: seedError } = await supabase
+          .from("app_state")
+          .upsert({ user_id: userId, data: stateRef.current });
+        if (seedError) console.error("[store] failed to seed cloud state:", seedError.message);
+      }
+
+      if (!cancelled) cloudStatusRef.current = "ready";
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, hydrated, supabase]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -158,7 +232,21 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       loadedOnce.current = true;
     }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state, hydrated]);
+
+    if (!user || !supabase || cloudStatusRef.current !== "ready") return;
+
+    if (pushTimeoutRef.current) clearTimeout(pushTimeoutRef.current);
+    pushTimeoutRef.current = setTimeout(() => {
+      void (async () => {
+        const { error } = await supabase.from("app_state").upsert({ user_id: user.id, data: state });
+        if (error) console.error("[store] failed to sync state to cloud:", error.message);
+      })();
+    }, CLOUD_SYNC_DEBOUNCE_MS);
+
+    return () => {
+      if (pushTimeoutRef.current) clearTimeout(pushTimeoutRef.current);
+    };
+  }, [state, hydrated, user, supabase]);
 
   const markActive = useCallback(() => {
     setState((s) => {
