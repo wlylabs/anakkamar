@@ -1,8 +1,9 @@
 "use client";
 
-import { ListChecks, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
+import { ProjectsIllustration } from "@/components/illustrations";
 import { CategoryBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -54,7 +55,7 @@ export default function ProjectsPage() {
 
       {state.projects.length === 0 ? (
         <EmptyState
-          icon={<ListChecks className="size-8" aria-hidden />}
+          icon={<ProjectsIllustration className="h-28 w-36" />}
           title="Belum ada project"
           description="Mulai dari satu hal kecil yang pengen lo capai — belajar skill baru, olahraga lagi, atau bikin karya."
           action={
