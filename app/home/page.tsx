@@ -141,7 +141,7 @@ export default function HomePage() {
                       aria-pressed={doneToday}
                       aria-label="Tandai hari ini"
                     >
-                      <Check className="size-4" aria-hidden />
+                      <Check key={String(doneToday)} className={doneToday ? "size-4 animate-pop" : "size-4"} aria-hidden />
                     </button>
                   </li>
                 );
@@ -185,7 +185,7 @@ export default function HomePage() {
                       aria-pressed={done}
                       aria-label={`Tandai ${h.name}`}
                     >
-                      <Check className="size-4" aria-hidden />
+                      <Check key={String(done)} className={done ? "size-4 animate-pop" : "size-4"} aria-hidden />
                     </button>
                   </li>
                 );

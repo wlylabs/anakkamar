@@ -89,7 +89,7 @@ export default function ChallengeDetailPage() {
                     )}
                     title={formatDateID(date)}
                   >
-                    {checked ? <Check className="size-4" aria-hidden /> : i + 1}
+                    {checked ? <Check className="size-4 animate-pop" aria-hidden /> : i + 1}
                   </button>
                 );
               })}

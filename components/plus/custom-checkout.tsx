@@ -154,7 +154,7 @@ export function CustomCheckout() {
     return (
       <div className="flex flex-col items-center gap-3 py-4 text-center">
         <div className="grid size-14 place-items-center rounded-full border-2 border-line bg-positive-soft text-positive">
-          <CheckCircle2 className="size-7" aria-hidden />
+          <CheckCircle2 className="size-7 animate-pop" aria-hidden />
         </div>
         <p className="text-lg font-bold">Pembayaran berhasil!</p>
         <p className="text-sm text-ink-muted">Anak Kamar Plus lo udah aktif. Makasih udah dukung.</p>
