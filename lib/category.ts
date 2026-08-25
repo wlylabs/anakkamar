@@ -1,5 +1,3 @@
-import { Brain, HeartPulse, Palette, Sparkles, Users, Wallet, Wrench, Zap, type LucideIcon } from "lucide-react";
-
 import type { FocusArea } from "./types";
 
 export const CATEGORY_COLOR: Record<FocusArea, string> = {
@@ -22,15 +20,4 @@ export const CATEGORY_SOFT: Record<FocusArea, string> = {
   kreativitas: "var(--kreativitas-soft)",
   relasi: "var(--relasi-soft)",
   lainnya: "var(--canvas-alt)",
-};
-
-export const CATEGORY_ICON: Record<FocusArea, LucideIcon> = {
-  skill: Wrench,
-  kesehatan: HeartPulse,
-  keuangan: Wallet,
-  mental: Brain,
-  produktivitas: Zap,
-  kreativitas: Palette,
-  relasi: Users,
-  lainnya: Sparkles,
 };
