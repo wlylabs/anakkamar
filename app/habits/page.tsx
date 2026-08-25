@@ -3,6 +3,7 @@
 import { Archive, Check, Flame, Plus, Sprout, X } from "lucide-react";
 import { useState } from "react";
 
+import { HabitsIllustration } from "@/components/illustrations";
 import { LimitBanner } from "@/components/plus/limit-banner";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -100,7 +101,7 @@ export default function HabitsPage() {
 
       {activeHabits.length === 0 && !showForm ? (
         <EmptyState
-          icon={<Sprout className="size-8" aria-hidden />}
+          icon={<HabitsIllustration className="h-28 w-36" />}
           title="Belum ada habit"
           description="Mulai dari satu kebiasaan kecil aja. Nggak perlu langsung banyak."
           action={

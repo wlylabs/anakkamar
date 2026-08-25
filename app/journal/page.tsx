@@ -3,6 +3,7 @@
 import { BookHeart, Lock, Shuffle, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { JournalIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -73,7 +74,11 @@ export default function JournalPage() {
 
       <div className="mt-8">
         {state.journalEntries.length === 0 ? (
-          <EmptyState title="Belum ada catatan" description="Tulisan pertama lo bakal muncul di sini." />
+          <EmptyState
+            icon={<JournalIllustration className="h-28 w-36" />}
+            title="Belum ada catatan"
+            description="Tulisan pertama lo bakal muncul di sini."
+          />
         ) : (
           <div className="space-y-4">
             {state.journalEntries.map((entry) => (
