@@ -132,9 +132,11 @@ interface Ctx {
   toggleHabitDate: (habitId: string, date?: string) => void;
   archiveHabit: (id: string) => void;
   addJournalEntry: (prompt: string, content: string) => void;
+  deleteJournalEntry: (id: string) => void;
   updateProfile: (patch: Partial<Profile>) => void;
   isHabitDoneOn: (habitId: string, date: string) => boolean;
   habitStreak: (habitId: string) => number;
+  replaceState: (next: AppState) => void;
 }
 
 const StoreContext = createContext<Ctx | null>(null);
@@ -363,8 +365,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [withActiveAndAchievements],
   );
 
+  const deleteJournalEntry: Ctx["deleteJournalEntry"] = useCallback((id) => {
+    setState((s) => ({ ...s, journalEntries: s.journalEntries.filter((e) => e.id !== id) }));
+  }, []);
+
   const updateProfile: Ctx["updateProfile"] = useCallback((patch) => {
     setState((s) => ({ ...s, profile: { ...s.profile, ...patch } }));
+  }, []);
+
+  const replaceState: Ctx["replaceState"] = useCallback((next) => {
+    setState(next);
   }, []);
 
   const isHabitDoneOn = useCallback(
@@ -396,9 +406,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleHabitDate,
       archiveHabit,
       addJournalEntry,
+      deleteJournalEntry,
       updateProfile,
       isHabitDoneOn,
       habitStreak,
+      replaceState,
     }),
     [
       state,
@@ -417,7 +429,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       toggleHabitDate,
       archiveHabit,
       addJournalEntry,
+      deleteJournalEntry,
       updateProfile,
+      replaceState,
       isHabitDoneOn,
       habitStreak,
     ],
