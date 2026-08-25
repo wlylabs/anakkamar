@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
+import { WeeklyReflection } from "@/components/progress/weekly-reflection";
 import { Card } from "@/components/ui/card";
 import {
   activityStreak,
@@ -11,6 +12,7 @@ import {
   monthlyActivity,
   projectStats,
   weeklyActivity,
+  weeklySnapshot,
 } from "@/lib/stats";
 import { useApp } from "@/lib/store";
 
@@ -34,6 +36,7 @@ export default function ProgressPage() {
   const week = weeklyActivity(state);
   const month = monthlyActivity(state);
   const activeDaysTotal = new Set(state.activeDates).size;
+  const snapshot = weeklySnapshot(state);
 
   return (
     <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 md:px-8">
@@ -94,6 +97,8 @@ export default function ProgressPage() {
           </div>
         </Card>
       </div>
+
+      <WeeklyReflection snapshot={snapshot} />
     </div>
   );
 }
