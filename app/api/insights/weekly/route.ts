@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { AiRateLimitError, generateText, hasServerDefaultKey, rateLimitMessage } from "@/lib/ai";
+import {
+  AiProviderError,
+  AiRateLimitError,
+  generateText,
+  hasServerDefaultKey,
+  providerErrorMessage,
+  rateLimitMessage,
+} from "@/lib/ai";
 import type { WeeklySnapshot } from "@/lib/stats";
 
 const KEY_MAX_LENGTH = 200;
@@ -79,8 +86,12 @@ export async function POST(request: Request) {
     if (err instanceof AiRateLimitError) {
       return NextResponse.json({ error: rateLimitMessage(err) }, { status: 429 });
     }
+    if (err instanceof AiProviderError) {
+      console.error("[insights/weekly] provider error:", err.message);
+      return NextResponse.json({ error: providerErrorMessage(err) }, { status: 502 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.error("[insights/weekly] failed:", message);
-    return NextResponse.json({ error: "Gagal bikin refleksi. Cek lagi API key lo di Profil." }, { status: 502 });
+    return NextResponse.json({ error: `Gagal bikin refleksi. ${message}` }, { status: 502 });
   }
 }
