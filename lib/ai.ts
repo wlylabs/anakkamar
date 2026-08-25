@@ -3,7 +3,7 @@ import "server-only";
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
 /** True if the deployer set a shared server-side key, used when a request brings none of its own. */
 export const hasServerDefaultKey = Boolean(GROQ_API_KEY || GEMINI_API_KEY);
@@ -110,6 +110,13 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
  * when Groq's key is missing or the call errors (rate limit, outage), so
  * one provider hiccup doesn't take the feature down.
  */
+/** Short one-line summary of a thrown error, for combining Groq + Gemini failures into one message. */
+function briefError(err: unknown): string {
+  if (err instanceof AiRateLimitError) return "kena limit gratis (429)";
+  if (err instanceof AiProviderError) return `${err.status} — ${err.detail}`;
+  return err instanceof Error ? err.message : String(err);
+}
+
 export async function generateText(systemPrompt: string, userPrompt: string, keys: RequestKeys = {}) {
   const groqKey = keys.groq || GROQ_API_KEY;
   const geminiKey = keys.gemini || GEMINI_API_KEY;
@@ -124,7 +131,15 @@ export async function generateText(systemPrompt: string, userPrompt: string, key
     }
   }
   if (geminiKey) {
-    return await callGemini(geminiKey, systemPrompt, userPrompt);
+    try {
+      return await callGemini(geminiKey, systemPrompt, userPrompt);
+    } catch (geminiErr) {
+      // Both configured and both failed — surface Groq's reason too, since
+      // otherwise it's silently swallowed and it looks like Gemini is the
+      // only provider that was ever tried.
+      if (groqError) throw new Error(`Groq gagal (${briefError(groqError)}), Gemini juga gagal (${briefError(geminiErr)}).`);
+      throw geminiErr;
+    }
   }
   // Distinguish "nothing configured" from "the only configured provider
   // errored" — the latter shouldn't be reported as if no key was set.
@@ -216,7 +231,12 @@ export async function generateChatReply(systemPrompt: string, turns: ChatTurn[],
     }
   }
   if (geminiKey) {
-    return await callGeminiChat(geminiKey, systemPrompt, turns);
+    try {
+      return await callGeminiChat(geminiKey, systemPrompt, turns);
+    } catch (geminiErr) {
+      if (groqError) throw new Error(`Groq gagal (${briefError(groqError)}), Gemini juga gagal (${briefError(geminiErr)}).`);
+      throw geminiErr;
+    }
   }
   if (groqError) throw groqError instanceof Error ? groqError : new Error(String(groqError));
   throw new Error("Nggak ada AI provider yang dikonfigurasi.");
