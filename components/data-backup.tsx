@@ -4,6 +4,7 @@ import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
 import type { AppState } from "@/lib/types";
 
@@ -15,6 +16,7 @@ function isAppStateShape(value: unknown): value is Partial<AppState> {
 
 export function DataBackup() {
   const { state, replaceState } = useApp();
+  const { user } = usePremium();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [imported, setImported] = useState(false);
@@ -78,8 +80,9 @@ export function DataBackup() {
     <div>
       <h2 className="font-bold tracking-tight">Backup data</h2>
       <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink-muted">
-        Semua data lo (project, habit, journal) cuma tersimpan di device ini. Ekspor sesekali biar
-        nggak ilang kalau ganti HP atau browser-nya di-reset.
+        {user
+          ? "Data lo (project, habit, journal) udah ke-sync ke akun, jadi tetap ada meski logout terus login lagi atau ganti device. Ekspor sesekali kalau mau punya salinan sendiri."
+          : "Lo belum login, jadi data lo (project, habit, journal) cuma tersimpan di device ini. Login biar data lo ke-sync ke akun dan nggak ilang, atau ekspor sesekali biar nggak ilang kalau ganti HP atau browser-nya di-reset."}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">
         <button
