@@ -5,10 +5,11 @@ import { PLUS_PRICE_IDR, PLUS_PRODUCT_NAME } from "@/lib/premium";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const EXPIRY_MINUTES = 15;
-type Method = "qris" | "gopay";
+const NOTE_MAX_LENGTH = 200;
+type Method = "qris" | "gopay" | "dana_manual";
 
 function isMethod(value: unknown): value is Method {
-  return value === "qris" || value === "gopay";
+  return value === "qris" || value === "gopay" || value === "dana_manual";
 }
 
 export async function POST(request: Request) {
@@ -16,9 +17,6 @@ export async function POST(request: Request) {
     const supabase = await getSupabaseServerClient();
     if (!supabase) {
       return NextResponse.json({ error: "Supabase belum dikonfigurasi." }, { status: 503 });
-    }
-    if (!midtransConfigured) {
-      return NextResponse.json({ error: "Midtrans belum dikonfigurasi." }, { status: 503 });
     }
 
     const body = await request.json().catch(() => ({}));
@@ -36,9 +34,25 @@ export async function POST(request: Request) {
 
     const orderId = `plus-${user.id.slice(0, 8)}-${Date.now()}`;
 
+    if (method === "dana_manual") {
+      const note = typeof body.note === "string" ? body.note.trim().slice(0, NOTE_MAX_LENGTH) : null;
+      const { error: insertError } = await supabase
+        .from("purchases")
+        .insert({ order_id: orderId, user_id: user.id, amount: PLUS_PRICE_IDR, status: "pending", method, note });
+      if (insertError) {
+        console.error("[checkout] manual purchases insert failed:", insertError.message);
+        return NextResponse.json({ error: `DB: ${insertError.message}` }, { status: 500 });
+      }
+      return NextResponse.json({ orderId, manual: true });
+    }
+
+    if (!midtransConfigured) {
+      return NextResponse.json({ error: "Midtrans belum dikonfigurasi." }, { status: 503 });
+    }
+
     const { error: insertError } = await supabase
       .from("purchases")
-      .insert({ order_id: orderId, user_id: user.id, amount: PLUS_PRICE_IDR, status: "pending" });
+      .insert({ order_id: orderId, user_id: user.id, amount: PLUS_PRICE_IDR, status: "pending", method });
     if (insertError) {
       console.error("[checkout] purchases insert failed:", insertError.message);
       return NextResponse.json({ error: `DB: ${insertError.message}` }, { status: 500 });
