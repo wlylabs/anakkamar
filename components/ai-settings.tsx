@@ -3,6 +3,7 @@
 import { Check, ExternalLink, Eye, EyeOff, Gauge, KeyRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { AiStatusBadge } from "@/components/ai-status-badge";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/field";
 import { useAiKeys } from "@/lib/ai-keys";
@@ -33,7 +34,7 @@ const PROVIDERS = [
 ];
 
 export function AiSettings() {
-  const { keys, hydrated, save } = useAiKeys();
+  const { keys, hydrated, save, active, source, checkingServer } = useAiKeys();
   const [draft, setDraft] = useState({ groq: "", gemini: "" });
   const [reveal, setReveal] = useState({ groq: false, gemini: false });
   const [saved, setSaved] = useState(false);
@@ -51,7 +52,7 @@ export function AiSettings() {
     window.setTimeout(() => setSaved(false), 2000);
   };
 
-  const active = Boolean(keys.groq || keys.gemini);
+  const hasPersonalKey = Boolean(keys.groq || keys.gemini);
 
   return (
     <div>
@@ -64,6 +65,7 @@ export function AiSettings() {
         nulis journal. Key cuma kesimpen di browser ini — nggak pernah kami simpan, dan nggak ikut
         kebawa kalau lo ekspor backup data.
       </p>
+      <AiStatusBadge active={active} source={source} checking={checkingServer} className="mt-3" />
 
       <form onSubmit={handleSave} className="mt-4 space-y-4">
         {PROVIDERS.map((p) => (
@@ -126,7 +128,7 @@ export function AiSettings() {
               <Check className="size-3.5" aria-hidden />
               Tersimpan
             </span>
-          ) : active ? (
+          ) : hasPersonalKey ? (
             <span className="text-xs text-ink-subtle">Refleksi AI aktif.</span>
           ) : (
             <span className="text-xs text-ink-subtle">Belum aktif — isi salah satu key di atas.</span>

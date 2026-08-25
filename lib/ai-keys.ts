@@ -34,10 +34,34 @@ function read(): AiKeys {
 export function useAiKeys() {
   const [keys, setKeys] = useState<AiKeys>(EMPTY);
   const [hydrated, setHydrated] = useState(false);
+  // Whether the deployer set a shared GROQ_API_KEY/GEMINI_API_KEY server-side.
+  // `lib/ai.ts` is `server-only`, so the only way to know this client-side is
+  // to ask the API — without it, `active` below would stay false for anyone
+  // who hasn't pasted their own key, even when a server default works fine.
+  const [serverDefaultActive, setServerDefaultActive] = useState(false);
+  const [serverChecked, setServerChecked] = useState(false);
 
   useEffect(() => {
     setKeys(read());
     setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/ai/status")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { hasServerDefaultKey?: boolean } | null) => {
+        if (!cancelled && data?.hasServerDefaultKey) setServerDefaultActive(true);
+      })
+      .catch(() => {
+        // Offline/blocked — falls back to requiring the user's own key.
+      })
+      .finally(() => {
+        if (!cancelled) setServerChecked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const save = useCallback((next: AiKeys) => {
@@ -49,5 +73,15 @@ export function useAiKeys() {
     }
   }, []);
 
-  return { keys, hydrated, save };
+  const hasPersonalKey = Boolean(keys.groq || keys.gemini);
+  const active = hasPersonalKey || serverDefaultActive;
+  // "personal" always wins the label even if a server default also exists —
+  // the user's own key is the one actually being sent and billed against.
+  const source: "personal" | "server" | null = hasPersonalKey ? "personal" : serverDefaultActive ? "server" : null;
+  // Only worth a "checking..." state when a personal key isn't already
+  // enough to be active — otherwise the status is known instantly, no
+  // need to wait on the network round trip to /api/ai/status.
+  const checkingServer = hydrated && !hasPersonalKey && !serverChecked;
+
+  return { keys, hydrated, save, active, source, checkingServer };
 }
