@@ -17,11 +17,28 @@ import {
   SKILL_IDEAS,
 } from "@/lib/mock-data";
 
-function SectionHeader({ icon: Icon, title }: { icon: typeof Compass; title: string }) {
+function SectionHeader({
+  icon: Icon,
+  title,
+  href,
+  linkLabel,
+}: {
+  icon: typeof Compass;
+  title: string;
+  href?: string;
+  linkLabel?: string;
+}) {
   return (
-    <div className="mb-3 flex items-center gap-2">
-      <Icon className="size-4 text-ink-subtle" aria-hidden />
-      <p className="text-label text-ink-subtle">{title}</p>
+    <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="flex items-center gap-2">
+        <Icon className="size-4 text-ink-subtle" aria-hidden />
+        <p className="text-label text-ink-subtle">{title}</p>
+      </div>
+      {href ? (
+        <Link href={href} className="text-xs font-semibold text-ink-muted hover:text-ink">
+          {linkLabel ?? "Lihat semua"}
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -59,7 +76,7 @@ export default function ExplorePage() {
       </section>
 
       <section className="mt-10">
-        <SectionHeader icon={Flame} title="Challenge populer" />
+        <SectionHeader icon={Flame} title="Challenge populer" href="/challenges" />
         <div className="flex gap-3 overflow-x-auto pb-2">
           {CHALLENGES.slice(0, 5).map((c) => (
             <Link

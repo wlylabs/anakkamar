@@ -19,12 +19,24 @@ function mapStatus(transactionStatus: string): "settlement" | "expired" | "faile
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as MidtransNotification;
+  let body: Partial<MidtransNotification>;
+  try {
+    body = (await request.json()) as Partial<MidtransNotification>;
+  } catch {
+    // Midtrans's dashboard "test notification URL" button, and stray pings,
+    // can hit this endpoint with no body at all. Acknowledge rather than
+    // 500 — there's nothing to process, but the endpoint is reachable.
+    return NextResponse.json({ received: true, note: "empty or non-JSON body" });
+  }
+
+  if (!body.order_id || !body.signature_key) {
+    return NextResponse.json({ received: true, note: "missing fields, ignored" });
+  }
 
   const valid = verifyMidtransSignature({
     orderId: body.order_id,
-    statusCode: body.status_code,
-    grossAmount: body.gross_amount,
+    statusCode: body.status_code ?? "",
+    grossAmount: body.gross_amount ?? "",
     signatureKey: body.signature_key,
   });
   if (!valid) {
@@ -36,7 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Supabase belum dikonfigurasi." }, { status: 503 });
   }
 
-  const status = mapStatus(body.transaction_status);
+  const status = mapStatus(body.transaction_status ?? "");
 
   const { data: purchase } = await admin
     .from("purchases")
