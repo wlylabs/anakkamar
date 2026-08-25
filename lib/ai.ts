@@ -3,7 +3,12 @@ import "server-only";
 const GROQ_API_KEY = process.env.GROQ_API_KEY ?? "";
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+// "-latest" is an alias Google keeps pointed at the current recommended
+// flash model — pinning a dated version (e.g. gemini-2.0-flash) instead
+// means a hard 404 the day Google retires that specific version, like what
+// happened here. Deployers who want a pinned version can still set
+// GEMINI_MODEL themselves.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
 /** True if the deployer set a shared server-side key, used when a request brings none of its own. */
 export const hasServerDefaultKey = Boolean(GROQ_API_KEY || GEMINI_API_KEY);
@@ -60,8 +65,31 @@ function extractErrorDetail(rawBody: string): string {
   return rawBody.trim().slice(0, 300) || "nggak ada detail dari provider.";
 }
 
+/**
+ * fetch() with one retry, only for the failure modes that are genuinely
+ * transient (a dropped connection, a provider's 5xx). A 4xx (bad key,
+ * bad request, retired model) means the exact same request would fail
+ * again immediately, so those return on the first try — retrying would
+ * just double the latency of an error the user needs to see anyway.
+ */
+async function fetchWithRetry(url: string, init: RequestInit): Promise<Response> {
+  try {
+    const res = await fetch(url, init);
+    if (res.status < 500) return res;
+    await new Promise((r) => setTimeout(r, 400));
+    return await fetch(url, init);
+  } catch (err) {
+    await new Promise((r) => setTimeout(r, 400));
+    try {
+      return await fetch(url, init);
+    } catch {
+      throw err;
+    }
+  }
+}
+
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const res = await fetchWithRetry("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
@@ -84,7 +112,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
 
 async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -173,7 +201,7 @@ export interface ChatTurn {
 }
 
 async function callGroqChat(apiKey: string, systemPrompt: string, turns: ChatTurn[]) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const res = await fetchWithRetry("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
@@ -193,7 +221,7 @@ async function callGroqChat(apiKey: string, systemPrompt: string, turns: ChatTur
 
 async function callGeminiChat(apiKey: string, systemPrompt: string, turns: ChatTurn[]) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetchWithRetry(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
