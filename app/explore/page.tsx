@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import { CategoryBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { FREE_HABIT_LIMIT } from "@/lib/premium";
+import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
 import {
   CHALLENGES,
@@ -25,7 +27,9 @@ function SectionHeader({ icon: Icon, title }: { icon: typeof Compass; title: str
 }
 
 export default function ExplorePage() {
-  const { createHabit } = useApp();
+  const { state, createHabit } = useApp();
+  const { isPlus } = usePremium();
+  const habitAtLimit = !isPlus && state.habits.filter((h) => !h.archived).length >= FREE_HABIT_LIMIT;
 
   return (
     <div className="mx-auto max-w-5xl px-5 pb-16 pt-8 md:px-8">
@@ -92,16 +96,22 @@ export default function ExplorePage() {
       <section className="mt-10">
         <SectionHeader icon={Sprout} title="Habit ideas" />
         <div className="flex flex-wrap gap-2">
-          {HABIT_IDEAS.map((h) => (
-            <button
-              key={h}
-              type="button"
-              onClick={() => createHabit(h)}
-              className="text-label press rounded-full border-2 border-line bg-surface px-3 py-1.5"
-            >
-              + {h}
-            </button>
-          ))}
+          {habitAtLimit ? (
+            <LinkButton href="/plus" variant="secondary" size="sm">
+              Habit gratis penuh — lihat Plus
+            </LinkButton>
+          ) : (
+            HABIT_IDEAS.map((h) => (
+              <button
+                key={h}
+                type="button"
+                onClick={() => createHabit(h)}
+                className="text-label press rounded-full border-2 border-line bg-surface px-3 py-1.5"
+              >
+                + {h}
+              </button>
+            ))
+          )}
         </div>
       </section>
 

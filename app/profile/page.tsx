@@ -1,14 +1,15 @@
 "use client";
 
-import { Award, Lock, Pencil } from "lucide-react";
+import { Award, Lock, LogOut, Pencil, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { InstallSection } from "@/components/pwa/install-prompt";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label, Textarea } from "@/components/ui/field";
 import { ACHIEVEMENTS } from "@/lib/mock-data";
+import { usePremium } from "@/lib/premium-context";
 import { activityStreak, challengeStats, projectStats } from "@/lib/stats";
 import { useApp } from "@/lib/store";
 import { FOCUS_AREAS } from "@/lib/types";
@@ -25,6 +26,7 @@ function initials(name: string) {
 
 export default function ProfilePage() {
   const { state, hydrated, updateProfile } = useApp();
+  const { configured, user, isPlus, signOut } = usePremium();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -117,6 +119,45 @@ export default function ProfilePage() {
       <Link href="/progress" className="mt-3 block text-center text-sm font-semibold text-ink-muted hover:text-ink">
         Lihat progress lengkap →
       </Link>
+
+      {configured ? (
+        <Card className="mt-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="size-4 text-accent" aria-hidden />
+              <div>
+                <p className="text-sm font-bold">{isPlus ? "Anak Kamar Plus" : "Akun"}</p>
+                <p className="text-xs text-ink-subtle">
+                  {user ? user.email : "Belum masuk — data lo tetep tersimpan di device ini"}
+                </p>
+              </div>
+            </div>
+            {user ? (
+              isPlus ? (
+                <span className="text-label rounded-full bg-positive-soft px-2.5 py-1 text-positive">Aktif</span>
+              ) : (
+                <LinkButton href="/plus" size="sm" variant="accent">
+                  Upgrade
+                </LinkButton>
+              )
+            ) : (
+              <LinkButton href="/plus" size="sm" variant="secondary">
+                Masuk
+              </LinkButton>
+            )}
+          </div>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => void signOut()}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-ink-subtle"
+            >
+              <LogOut className="size-3.5" aria-hidden />
+              Keluar
+            </button>
+          ) : null}
+        </Card>
+      ) : null}
 
       <div className="mt-8">
         <p className="text-label mb-3 flex items-center gap-1.5 text-ink-subtle">
