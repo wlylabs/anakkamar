@@ -77,13 +77,87 @@ export const HABIT_IDEAS = [
   "Nggak buka HP 1 jam sebelum tidur",
 ];
 
-export const PROJECT_IDEAS: { title: string; durationDays: number; category: FocusArea }[] = [
-  { title: "Belajar Photoshop", durationDays: 30, category: "skill" },
-  { title: "Balik olahraga", durationDays: 14, category: "kesehatan" },
-  { title: "Bikin portfolio", durationDays: 30, category: "kreativitas" },
-  { title: "Belajar dasar coding", durationDays: 30, category: "skill" },
-  { title: "Nabung dana darurat", durationDays: 30, category: "keuangan" },
-  { title: "Rutin meditasi", durationDays: 14, category: "mental" },
+export interface ProjectIdea {
+  title: string;
+  durationDays: number;
+  category: FocusArea;
+  target: string;
+  milestones: string[];
+}
+
+export const PROJECT_IDEAS: ProjectIdea[] = [
+  {
+    title: "Belajar Photoshop",
+    durationDays: 30,
+    category: "skill",
+    target: "Bisa edit foto & bikin 1 poster sendiri",
+    milestones: [
+      "Install & kenalan sama tools dasar",
+      "Coba edit 1 foto (crop, warna, retouch)",
+      "Belajar layer & masking",
+      "Bikin 1 poster/desain utuh dari nol",
+    ],
+  },
+  {
+    title: "Balik olahraga",
+    durationDays: 14,
+    category: "kesehatan",
+    target: "Olahraga minimal 15 menit, 3x seminggu",
+    milestones: [
+      "Jalan kaki atau stretching 15 menit",
+      "Coba 1 video workout buat pemula",
+      "Konsisten 3x dalam seminggu",
+      "Naikin durasi jadi 20-30 menit",
+    ],
+  },
+  {
+    title: "Bikin portfolio",
+    durationDays: 30,
+    category: "kreativitas",
+    target: "Punya 1 halaman portfolio online",
+    milestones: [
+      "Kumpulin 3-5 karya terbaik",
+      "Tulis deskripsi singkat tiap karya",
+      "Susun jadi satu halaman sederhana",
+      "Publish & share ke orang lain",
+    ],
+  },
+  {
+    title: "Belajar dasar coding",
+    durationDays: 30,
+    category: "skill",
+    target: "Bisa bikin program kecil sendiri",
+    milestones: [
+      "Pilih satu bahasa & install tools-nya",
+      "Selesein dasar (variable, loop, function)",
+      "Bikin 1 project kecil (kalkulator/to-do list)",
+      "Coba baca & modif kode orang lain",
+    ],
+  },
+  {
+    title: "Nabung dana darurat",
+    durationDays: 30,
+    category: "keuangan",
+    target: "Rutin nyisihin dana darurat",
+    milestones: [
+      "Hitung total pengeluaran bulanan",
+      "Tentuin target nominal dana darurat",
+      "Nyisihin sebagian tiap ada uang masuk",
+      "Cek progress tabungan tiap minggu",
+    ],
+  },
+  {
+    title: "Rutin meditasi",
+    durationDays: 14,
+    category: "mental",
+    target: "Meditasi 5-10 menit tiap hari",
+    milestones: [
+      "Coba meditasi 5 menit pakai panduan (app/YouTube)",
+      "Cari waktu yang sama tiap hari",
+      "Konsisten 7 hari berturut-turut",
+      "Naikin durasi jadi 10 menit",
+    ],
+  },
 ];
 
 export const JOURNAL_PROMPTS = [
@@ -134,6 +208,49 @@ export const SKILL_IDEAS = [
   "Bahasa asing dasar",
   "Memasak menu simpel",
 ];
+
+export const CATEGORY_TIPS: Record<FocusArea, string[]> = {
+  skill: [
+    "Tonton atau baca 1 tutorial pendek dulu sebelum langsung praktik.",
+    "Latihan 20 menit tiap hari lebih ngefek daripada belajar 3 jam sekali seminggu.",
+    "Nggak apa-apa hasil pertama jelek — itu tandanya lo udah mulai.",
+  ],
+  kesehatan: [
+    "Mulai dari durasi kecil yang beneran bisa lo jalanin, bukan target ideal.",
+    "Konsistensi lebih penting daripada intensitas di awal.",
+    "Siapin baju/alat dari malam sebelumnya biar besok nggak banyak alasan.",
+  ],
+  keuangan: [
+    "Catat dulu ke mana uang lo pergi sebelum mutusin mau hemat di mana.",
+    "Sisihkan di awal (pas uang masuk), bukan nunggu sisa di akhir bulan.",
+    "Target kecil yang konsisten lebih realistis daripada target besar yang bikin capek.",
+  ],
+  mental: [
+    "Nggak semua hari harus produktif — istirahat juga bagian dari progress.",
+    "Coba mulai dari 5 menit. Durasi kecil tetep ngaruh kalau konsisten.",
+    "Kalau capek, boleh skip satu hari asal besok lanjut lagi.",
+  ],
+  produktivitas: [
+    "Pecah kerjaan besar jadi langkah yang bisa kelar dalam 20-30 menit.",
+    "Fokus ke satu hal dulu — multitasking sering bikin nggak ada yang kelar.",
+    "Selesai 'cukup baik' lebih baik daripada sempurna tapi nggak pernah kelar.",
+  ],
+  kreativitas: [
+    "Jangan nunggu ide sempurna — mulai dari versi kasar dulu.",
+    "Kumpulin referensi dulu sebelum mulai, biar nggak buntu di tengah jalan.",
+    "Karya kecil yang jadi lebih berharga daripada karya besar yang nggak pernah selesai.",
+  ],
+  relasi: [
+    "Mulai dari langkah kecil — satu pesan atau satu ajakan ngobrol udah cukup.",
+    "Nggak perlu nunggu momen sempurna buat reconnect sama seseorang.",
+    "Dengerin lebih banyak daripada nunggu giliran ngomong.",
+  ],
+  lainnya: [
+    "Pecah goal besar jadi langkah kecil yang bisa lo mulai hari ini juga.",
+    "Progress kecil yang konsisten ngalahin progress besar yang cuma sekali.",
+    "Belum selesai bukan berarti gagal — coba lagi besok.",
+  ],
+};
 
 export const ACHIEVEMENTS: AchievementDef[] = [
   { id: "first-step", title: "First Step", description: "Menyelesaikan project pertama lo." },

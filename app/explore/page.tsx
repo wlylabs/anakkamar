@@ -98,13 +98,15 @@ export default function ExplorePage() {
           {PROJECT_IDEAS.map((idea) => (
             <LinkButton
               key={idea.title}
-              href={`/projects/new?name=${encodeURIComponent(idea.title)}&category=${idea.category}&days=${idea.durationDays}`}
+              href={`/projects/new?name=${encodeURIComponent(idea.title)}&category=${idea.category}&days=${idea.durationDays}&target=${encodeURIComponent(idea.target)}&milestones=${encodeURIComponent(idea.milestones.join("|"))}`}
               variant="secondary"
               size="md"
               className="h-auto flex-col items-start justify-start gap-1 py-3 text-left"
             >
               <span className="font-semibold">{idea.title}</span>
-              <span className="text-xs font-normal text-ink-subtle">{idea.durationDays} hari</span>
+              <span className="text-xs font-normal text-ink-subtle">
+                {idea.durationDays} hari · {idea.milestones.length} langkah udah disiapin
+              </span>
             </LinkButton>
           ))}
         </div>

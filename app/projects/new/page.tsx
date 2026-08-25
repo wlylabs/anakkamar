@@ -27,9 +27,12 @@ function NewProjectForm() {
   const [category, setCategory] = useState<FocusArea>(
     (params.get("category") as FocusArea) || "lainnya",
   );
-  const [target, setTarget] = useState("");
+  const [target, setTarget] = useState(params.get("target") ?? "");
   const [durationDays, setDurationDays] = useState<number>(Number(params.get("days")) || 30);
-  const [milestones, setMilestones] = useState<string[]>(["", ""]);
+  const [milestones, setMilestones] = useState<string[]>(() => {
+    const fromParams = params.get("milestones");
+    return fromParams ? fromParams.split("|") : ["", ""];
+  });
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,6 +150,11 @@ function NewProjectForm() {
 
         <div>
           <Label>Milestones (opsional)</Label>
+          {params.get("milestones") ? (
+            <p className="mb-2 text-xs text-ink-subtle">
+              Langkah ini udah kita siapin buat mulai. Edit atau tambah bebas sesuai kebutuhan lo.
+            </p>
+          ) : null}
           <div className="space-y-2">
             {milestones.map((m, i) => (
               <div key={i} className="flex gap-2">
