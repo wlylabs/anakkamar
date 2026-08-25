@@ -1,6 +1,6 @@
 "use client";
 
-import { BookHeart, Check, Flame, ListChecks, Plus, Sprout } from "lucide-react";
+import { ArrowRight, BookHeart, Check, Compass, Flame, ListChecks, Plus, Sprout } from "lucide-react";
 import Link from "next/link";
 
 import { CategoryBadge } from "@/components/ui/badge";
@@ -114,7 +114,7 @@ export default function HomePage() {
               <Flame className="size-3.5" aria-hidden /> Challenge aktif
             </p>
             <Link href="/challenges" className="text-xs font-semibold text-ink-muted hover:text-ink">
-              Explore
+              Semua challenge
             </Link>
           </div>
           {activeChallenges.length === 0 ? (
@@ -241,6 +241,17 @@ export default function HomePage() {
           </div>
         </Card>
       </div>
+
+      <Link
+        href="/explore"
+        className="press mt-4 flex items-center justify-between gap-3 rounded-[var(--radius)] border-2 border-line bg-accent-soft px-5 py-4"
+      >
+        <span className="flex items-center gap-2.5 text-sm font-semibold">
+          <Compass className="size-4 shrink-0" aria-hidden />
+          Bosen? Coba ide baru di Explore.
+        </span>
+        <ArrowRight className="size-4 shrink-0" aria-hidden />
+      </Link>
     </div>
   );
 }
