@@ -20,7 +20,7 @@ const STARTERS = [
 ];
 
 export default function ChatPage() {
-  const { keys: aiKeys, hydrated: aiKeysHydrated } = useAiKeys();
+  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
   const { messages, hydrated: chatHydrated, addMessage, clear } = useChatHistory();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -32,8 +32,6 @@ export default function ChatPage() {
   }, [messages, sending]);
 
   if (!aiKeysHydrated || !chatHydrated) return null;
-
-  const aiActive = Boolean(aiKeys.groq || aiKeys.gemini);
 
   const send = async (text: string) => {
     const trimmed = text.trim();

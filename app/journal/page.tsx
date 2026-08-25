@@ -26,7 +26,7 @@ type Insight = { status: "loading" } | { status: "done"; text: string } | { stat
 
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
-  const { keys: aiKeys, hydrated: aiKeysHydrated } = useAiKeys();
+  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodValue | null>(null);
@@ -39,8 +39,6 @@ export default function JournalPage() {
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
   if (!hydrated || !aiKeysHydrated) return null;
-
-  const aiActive = Boolean(aiKeys.groq || aiKeys.gemini);
 
   const fetchInsight = async (promptText: string, contentText: string) => {
     const requestId = ++insightRequestId.current;

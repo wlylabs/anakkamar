@@ -47,7 +47,7 @@ function writeCache(entry: Cached) {
 }
 
 export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
-  const { keys: aiKeys, hydrated: aiKeysHydrated } = useAiKeys();
+  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
   const [cached, setCached] = useState<Cached | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -59,7 +59,6 @@ export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
 
   if (!aiKeysHydrated) return null;
 
-  const aiActive = Boolean(aiKeys.groq || aiKeys.gemini);
   const current = cached?.weekStart === weekStart ? cached : null;
 
   const generate = async () => {
