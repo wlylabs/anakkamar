@@ -4,6 +4,7 @@ import { Award, Lock, LogOut, Pencil, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { DataBackup } from "@/components/data-backup";
 import { InstallSection } from "@/components/pwa/install-prompt";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -211,6 +212,10 @@ export default function ProfilePage() {
       ) : null}
 
       <Card className="mt-8">
+        <DataBackup />
+      </Card>
+
+      <Card className="mt-4">
         <InstallSection />
       </Card>
     </div>

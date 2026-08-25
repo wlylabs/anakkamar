@@ -1,6 +1,6 @@
 "use client";
 
-import { BookHeart, Lock, Shuffle } from "lucide-react";
+import { BookHeart, Lock, Shuffle, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ function dayOfYear() {
 }
 
 export default function JournalPage() {
-  const { state, hydrated, addJournalEntry } = useApp();
+  const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
 
@@ -78,7 +78,19 @@ export default function JournalPage() {
           <div className="space-y-4">
             {state.journalEntries.map((entry) => (
               <Card key={entry.id}>
-                <p className="text-xs font-semibold text-ink-subtle">{formatDateID(entry.date)}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-xs font-semibold text-ink-subtle">{formatDateID(entry.date)}</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("Hapus catatan ini? Nggak bisa dibalikin.")) deleteJournalEntry(entry.id);
+                    }}
+                    className="press flex size-7 shrink-0 items-center justify-center rounded-[var(--radius)] text-ink-subtle hover:text-critical"
+                    aria-label="Hapus catatan"
+                  >
+                    <Trash2 className="size-3.5" aria-hidden />
+                  </button>
+                </div>
                 <p className="mt-1.5 text-sm italic text-ink-muted">&ldquo;{entry.prompt}&rdquo;</p>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{entry.content}</p>
               </Card>
