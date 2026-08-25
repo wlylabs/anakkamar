@@ -26,7 +26,7 @@ function initials(name: string) {
 
 export default function ProfilePage() {
   const { state, hydrated, updateProfile } = useApp();
-  const { configured, user, isPlus, signOut } = usePremium();
+  const { configured, user, isPlus, isAdmin, signOut } = usePremium();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -126,7 +126,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2.5">
               <Sparkles className="size-4 text-accent" aria-hidden />
               <div>
-                <p className="text-sm font-bold">{isPlus ? "Anak Kamar Plus" : "Akun"}</p>
+                <p className="text-sm font-bold">{isAdmin ? "Admin" : isPlus ? "Anak Kamar Plus" : "Akun"}</p>
                 <p className="text-xs text-ink-subtle">
                   {user ? user.email : "Belum masuk — data lo tetep tersimpan di device ini"}
                 </p>
@@ -146,6 +146,14 @@ export default function ProfilePage() {
               </LinkButton>
             )}
           </div>
+          {isAdmin ? (
+            <Link
+              href="/admin/plus"
+              className="mt-3 block text-xs font-semibold text-ink-muted hover:text-ink"
+            >
+              Kelola transfer manual →
+            </Link>
+          ) : null}
           {user ? (
             <button
               type="button"
