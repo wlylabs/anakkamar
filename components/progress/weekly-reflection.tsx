@@ -50,6 +50,7 @@ export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
   const { keys: aiKeys, hydrated: aiKeysHydrated } = useAiKeys();
   const [cached, setCached] = useState<Cached | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [errorText, setErrorText] = useState<string | null>(null);
   const weekStart = mondayOfThisWeek();
 
   useEffect(() => {
@@ -63,19 +64,21 @@ export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
 
   const generate = async () => {
     setStatus("loading");
+    setErrorText(null);
     try {
       const res = await fetch("/api/insights/weekly", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ snapshot, groqApiKey: aiKeys.groq, geminiApiKey: aiKeys.gemini }),
       });
-      const data = (await res.json().catch(() => ({}))) as { insight?: string };
+      const data = (await res.json().catch(() => ({}))) as { insight?: string; error?: string };
       if (res.ok && data.insight) {
         const entry = { weekStart, text: data.insight };
         writeCache(entry);
         setCached(entry);
         setStatus("idle");
       } else {
+        setErrorText(data.error ?? null);
         setStatus("error");
       }
     } catch {
@@ -107,7 +110,7 @@ export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
           </p>
         )}
         {status === "error" ? (
-          <p className="mt-2 text-xs font-semibold text-critical">Gagal bikin refleksi. Coba lagi.</p>
+          <p className="mt-2 text-xs font-semibold text-critical">{errorText ?? "Gagal bikin refleksi. Coba lagi."}</p>
         ) : null}
         <Button
           type="button"

@@ -22,7 +22,7 @@ function dayOfYear() {
   return Math.floor(diff / 86_400_000);
 }
 
-type Insight = { status: "loading" } | { status: "done"; text: string };
+type Insight = { status: "loading" } | { status: "done"; text: string } | { status: "rate-limited"; text: string };
 
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
@@ -56,11 +56,18 @@ export default function JournalPage() {
           geminiApiKey: aiKeys.gemini,
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { insight?: string };
+      const data = (await res.json().catch(() => ({}))) as { insight?: string; error?: string };
       if (requestId !== insightRequestId.current) return;
-      // Best-effort — the entry's already saved locally, so a missing/failed
-      // insight (bad key, rate-limited, offline) just skips the card.
-      setInsight(res.ok && data.insight ? { status: "done", text: data.insight } : null);
+      if (res.ok && data.insight) {
+        setInsight({ status: "done", text: data.insight });
+      } else if (res.status === 429 && data.error) {
+        // Rate limit is worth surfacing (so the entry not getting a
+        // reflection doesn't look broken) — anything else (bad key,
+        // offline) stays a silent skip since the entry's already saved.
+        setInsight({ status: "rate-limited", text: data.error });
+      } else {
+        setInsight(null);
+      }
     } catch {
       if (requestId !== insightRequestId.current) return;
       setInsight(null);
@@ -135,10 +142,15 @@ export default function JournalPage() {
       </Card>
 
       {insight ? (
-        <Card className="mt-4 border-2 border-line bg-accent-soft">
+        <Card
+          className={cn(
+            "mt-4 border-2 border-line",
+            insight.status === "rate-limited" ? "bg-canvas-alt" : "bg-accent-soft",
+          )}
+        >
           <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-ink-subtle">
             <Sparkles className="size-3.5" aria-hidden />
-            Refleksi
+            {insight.status === "rate-limited" ? "Refleksi AI lagi nggak bisa" : "Refleksi"}
           </p>
           <p className="mt-1.5 text-sm leading-relaxed">
             {insight.status === "loading" ? "Lagi mikir..." : insight.text}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ExternalLink, Eye, EyeOff, KeyRound } from "lucide-react";
+import { Check, ExternalLink, Eye, EyeOff, Gauge, KeyRound } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const PROVIDERS = [
     id: "groq" as const,
     name: "Groq",
     tutorialUrl: "https://console.groq.com/keys",
+    limitsUrl: "https://console.groq.com/docs/rate-limits",
     steps: [
       "Buka console.groq.com/keys, sign in atau daftar (gratis, bisa pakai Google).",
       "Klik \"Create API Key\", kasih nama bebas, lalu Submit.",
@@ -22,6 +23,7 @@ const PROVIDERS = [
     id: "gemini" as const,
     name: "Gemini",
     tutorialUrl: "https://aistudio.google.com/apikey",
+    limitsUrl: "https://ai.google.dev/gemini-api/docs/rate-limits",
     steps: [
       "Buka aistudio.google.com/apikey, sign in pakai akun Google.",
       "Klik \"Create API key\" → pilih atau bikin project.",
@@ -103,6 +105,15 @@ export function AiSettings() {
                 <li key={i}>{step}</li>
               ))}
             </ol>
+            <a
+              href={p.limitsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-ink-subtle hover:text-ink"
+            >
+              Lihat batas gratis (rate limit) {p.name} terbaru
+              <ExternalLink className="size-3" aria-hidden />
+            </a>
           </div>
         ))}
 
@@ -122,6 +133,21 @@ export function AiSettings() {
           )}
         </div>
       </form>
+
+      <div className="mt-4 rounded-[var(--radius)] border-2 border-line-soft bg-canvas-alt p-3.5">
+        <p className="flex items-center gap-1.5 text-xs font-bold text-ink-subtle">
+          <Gauge className="size-3.5" aria-hidden />
+          Soal batas pemakaian
+        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink-subtle">
+          Groq dan Gemini sama-sama punya batas gratis (jumlah request per menit/hari) yang bisa
+          berubah kapan aja dan beda-beda tergantung model — jadi angkanya nggak kami cantumin di
+          sini, cek link di atas buat yang paling akurat. Kalau kena limit, app bakal kasih tau
+          langsung. Groq dicoba duluan, terus otomatis pindah ke Gemini kalau lagi limit atau
+          error — jadi isi <span className="font-semibold text-ink">kedua key</span> biar makin
+          kecil kemungkinan mentok bareng.
+        </p>
+      </div>
     </div>
   );
 }

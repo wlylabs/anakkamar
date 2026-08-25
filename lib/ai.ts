@@ -13,6 +13,21 @@ interface RequestKeys {
   gemini?: string;
 }
 
+/**
+ * Thrown when a provider answers 429 (free-tier request/token limit hit).
+ * Kept distinct from a generic failure so routes can tell the user "you're
+ * rate-limited, try later or add the other provider's key" instead of the
+ * misleading "check your API key" message a bad-key error gets.
+ */
+export class AiRateLimitError extends Error {
+  provider: "groq" | "gemini";
+  constructor(provider: "groq" | "gemini") {
+    super(`${provider} rate limited (429)`);
+    this.name = "AiRateLimitError";
+    this.provider = provider;
+  }
+}
+
 async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -27,6 +42,7 @@ async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string
       max_tokens: 200,
     }),
   });
+  if (res.status === 429) throw new AiRateLimitError("groq");
   if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim();
@@ -45,6 +61,7 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
       generationConfig: { temperature: 0.7, maxOutputTokens: 200 },
     }),
   });
+  if (res.status === 429) throw new AiRateLimitError("gemini");
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
@@ -83,6 +100,12 @@ export async function generateText(systemPrompt: string, userPrompt: string, key
   throw new Error("Nggak ada AI provider yang dikonfigurasi.");
 }
 
+/** User-facing copy for AiRateLimitError, shared across the API routes that call generateText/generateChatReply. */
+export function rateLimitMessage(err: AiRateLimitError) {
+  const name = err.provider === "groq" ? "Groq" : "Gemini";
+  return `Kena limit gratis ${name} buat sekarang. Tunggu beberapa saat, atau isi key provider satunya juga di Profil biar otomatis ganti kalau salah satu lagi limit.`;
+}
+
 export interface ChatTurn {
   role: "user" | "assistant";
   content: string;
@@ -99,6 +122,7 @@ async function callGroqChat(apiKey: string, systemPrompt: string, turns: ChatTur
       max_tokens: 500,
     }),
   });
+  if (res.status === 429) throw new AiRateLimitError("groq");
   if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const text = data.choices?.[0]?.message?.content?.trim();
@@ -120,6 +144,7 @@ async function callGeminiChat(apiKey: string, systemPrompt: string, turns: ChatT
       generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
     }),
   });
+  if (res.status === 429) throw new AiRateLimitError("gemini");
   if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
