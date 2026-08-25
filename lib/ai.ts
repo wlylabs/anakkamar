@@ -82,3 +82,71 @@ export async function generateText(systemPrompt: string, userPrompt: string, key
   if (groqError) throw groqError instanceof Error ? groqError : new Error(String(groqError));
   throw new Error("Nggak ada AI provider yang dikonfigurasi.");
 }
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+async function callGroqChat(apiKey: string, systemPrompt: string, turns: ChatTurn[]) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [{ role: "system", content: systemPrompt }, ...turns],
+      temperature: 0.7,
+      max_tokens: 500,
+    }),
+  });
+  if (!res.ok) throw new Error(`Groq ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("Groq: respons kosong.");
+  return text as string;
+}
+
+async function callGeminiChat(apiKey: string, systemPrompt: string, turns: ChatTurn[]) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: turns.map((t) => ({
+        role: t.role === "assistant" ? "model" : "user",
+        parts: [{ text: t.content }],
+      })),
+      generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+    }),
+  });
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
+  const data = await res.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error("Gemini: respons kosong.");
+  return text as string;
+}
+
+/**
+ * Multi-turn variant of generateText for the chat companion — same BYOK/
+ * fallback rules, but carries conversation history instead of one prompt.
+ */
+export async function generateChatReply(systemPrompt: string, turns: ChatTurn[], keys: RequestKeys = {}) {
+  const groqKey = keys.groq || GROQ_API_KEY;
+  const geminiKey = keys.gemini || GEMINI_API_KEY;
+  let groqError: unknown;
+
+  if (groqKey) {
+    try {
+      return await callGroqChat(groqKey, systemPrompt, turns);
+    } catch (err) {
+      groqError = err;
+      console.error("[ai] Groq chat failed, falling back to Gemini:", err instanceof Error ? err.message : err);
+    }
+  }
+  if (geminiKey) {
+    return await callGeminiChat(geminiKey, systemPrompt, turns);
+  }
+  if (groqError) throw groqError instanceof Error ? groqError : new Error(String(groqError));
+  throw new Error("Nggak ada AI provider yang dikonfigurasi.");
+}

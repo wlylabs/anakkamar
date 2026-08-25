@@ -10,11 +10,13 @@ import {
   challengeStats,
   longestHabitStreak,
   monthlyActivity,
+  moodTrend,
   projectStats,
   weeklyActivity,
   weeklySnapshot,
 } from "@/lib/stats";
 import { useApp } from "@/lib/store";
+import { MOOD_OPTIONS } from "@/lib/types";
 
 function StatTile({ value, label }: { value: number | string; label: string }) {
   return (
@@ -37,6 +39,8 @@ export default function ProgressPage() {
   const month = monthlyActivity(state);
   const activeDaysTotal = new Set(state.activeDates).size;
   const snapshot = weeklySnapshot(state);
+  const mood = moodTrend(state);
+  const moodLoggedCount = mood.filter((d) => d.mood !== null).length;
 
   return (
     <div className="mx-auto max-w-3xl px-5 pb-16 pt-8 md:px-8">
@@ -96,6 +100,45 @@ export default function ProgressPage() {
             ))}
           </div>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <p className="text-label mb-3 text-ink-subtle">Mood 14 hari terakhir</p>
+        {moodLoggedCount === 0 ? (
+          <Card>
+            <p className="text-sm text-ink-muted">
+              Belum ada mood tercatat. Isi perasaan lo pas nulis journal buat mulai lihat polanya.
+            </p>
+          </Card>
+        ) : (
+          <Card>
+            <div className="flex items-end justify-between gap-1">
+              {mood.map((d) => (
+                <div key={d.date} title={d.date} className="flex flex-1 flex-col items-center gap-1.5">
+                  <div
+                    className="flex w-full items-end justify-center rounded-[var(--radius)] border-2 border-line-soft"
+                    style={{ height: 44 }}
+                  >
+                    {d.mood ? (
+                      <div
+                        className="flex w-full items-end justify-center rounded-[3px]"
+                        style={{ height: `${(d.mood / 5) * 100}%`, backgroundColor: "var(--accent-soft)" }}
+                      >
+                        <span className="pb-0.5 text-[10px] leading-none">
+                          {MOOD_OPTIONS.find((m) => m.value === d.mood)?.emoji}
+                        </span>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-ink-subtle">
+              Naruh perasaan jadi kata-kata (affect labeling) terbukti bisa bantu ngeredam intensitasnya —
+              riset Lieberman dkk. (2007). Ini bukan alat diagnosis, cuma buat lo lihat pola sendiri.
+            </p>
+          </Card>
+        )}
       </div>
 
       <WeeklyReflection snapshot={snapshot} />
