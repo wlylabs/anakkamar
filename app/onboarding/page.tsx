@@ -1,15 +1,15 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { CategoryPicker } from "@/components/ui/category-picker";
 import { Input, Label, Textarea } from "@/components/ui/field";
-import { CATEGORY_COLOR, CATEGORY_SOFT } from "@/lib/category";
 import { useApp } from "@/lib/store";
-import { FOCUS_AREAS, type FocusArea } from "@/lib/types";
+import { type FocusArea } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function OnboardingPage() {
@@ -52,32 +52,7 @@ export default function OnboardingPage() {
             </h1>
             <p className="mt-3 text-ink-muted">Pilih satu yang paling kerasa sekarang.</p>
 
-            <div className="stagger mt-8 grid grid-cols-2 gap-3">
-              {FOCUS_AREAS.map((area, i) => {
-                const active = focusArea === area.id;
-                return (
-                  <button
-                    key={area.id}
-                    type="button"
-                    onClick={() => setFocusArea(area.id)}
-                    style={
-                      {
-                        "--stagger-index": i,
-                        borderColor: active ? CATEGORY_COLOR[area.id] : undefined,
-                        backgroundColor: active ? CATEGORY_SOFT[area.id] : undefined,
-                      } as React.CSSProperties
-                    }
-                    className={cn(
-                      "press flex items-center justify-between rounded-[var(--radius)] border-2 border-line bg-surface px-4 py-4 text-left font-semibold tracking-tight",
-                      active && "shadow-pop-sm",
-                    )}
-                  >
-                    {area.label}
-                    {active ? <Check className="size-4 shrink-0" aria-hidden /> : null}
-                  </button>
-                );
-              })}
-            </div>
+            <CategoryPicker value={focusArea} onChange={setFocusArea} className="mt-8" />
 
             <Button
               size="lg"

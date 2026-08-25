@@ -6,12 +6,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { Button, LinkButton } from "@/components/ui/button";
+import { CategoryPicker } from "@/components/ui/category-picker";
 import { FieldError, Input, Label, Textarea } from "@/components/ui/field";
-import { CATEGORY_COLOR } from "@/lib/category";
 import { FREE_PROJECT_LIMIT } from "@/lib/premium";
 import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
-import { FOCUS_AREAS, type FocusArea } from "@/lib/types";
+import { type FocusArea } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const DURATIONS = [7, 14, 30];
@@ -98,25 +98,7 @@ function NewProjectForm() {
 
         <div>
           <Label>Kategori</Label>
-          <div className="flex flex-wrap gap-2">
-            {FOCUS_AREAS.map((area) => {
-              const active = category === area.id;
-              return (
-                <button
-                  key={area.id}
-                  type="button"
-                  onClick={() => setCategory(area.id)}
-                  style={{ borderColor: active ? CATEGORY_COLOR[area.id] : undefined }}
-                  className={cn(
-                    "text-label press rounded-full border-2 border-line px-3 py-1.5",
-                    active ? "bg-ink text-canvas" : "bg-surface",
-                  )}
-                >
-                  {area.label}
-                </button>
-              );
-            })}
-          </div>
+          <CategoryPicker value={category} onChange={setCategory} />
         </div>
 
         <div>
