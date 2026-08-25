@@ -10,6 +10,7 @@ import type {
   JoinedChallenge,
   JournalEntry,
   Milestone,
+  MoodValue,
   Profile,
   Project,
   ProjectStatus,
@@ -131,7 +132,7 @@ interface Ctx {
   createHabit: (name: string, note?: string) => void;
   toggleHabitDate: (habitId: string, date?: string) => void;
   archiveHabit: (id: string) => void;
-  addJournalEntry: (prompt: string, content: string) => void;
+  addJournalEntry: (prompt: string, content: string, mood?: MoodValue) => void;
   deleteJournalEntry: (id: string) => void;
   updateProfile: (patch: Partial<Profile>) => void;
   isHabitDoneOn: (habitId: string, date: string) => boolean;
@@ -353,11 +354,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const addJournalEntry: Ctx["addJournalEntry"] = useCallback(
-    (prompt, content) => {
+    (prompt, content, mood) => {
       withActiveAndAchievements((s) => ({
         ...s,
         journalEntries: [
-          { id: uid("journal"), prompt, content, date: todayStr(), createdAt: new Date().toISOString() },
+          { id: uid("journal"), prompt, content, mood, date: todayStr(), createdAt: new Date().toISOString() },
           ...s.journalEntries,
         ],
       }));

@@ -104,6 +104,25 @@ export function weeklySnapshot(state: AppState): WeeklySnapshot {
   };
 }
 
+/**
+ * Latest mood per calendar day over the last N days (most recent entry wins
+ * when someone journals more than once in a day). `null` for days with no
+ * entry — plotted as a gap, not a zero.
+ */
+export function moodTrend(state: AppState, days = 14) {
+  const byDate = new Map<string, number>();
+  for (const entry of state.journalEntries) {
+    if (!entry.mood) continue;
+    if (!byDate.has(entry.date)) byDate.set(entry.date, entry.mood);
+  }
+  const out: { date: string; mood: number | null }[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const date = addDays(todayStr(), -i);
+    out.push({ date, mood: byDate.get(date) ?? null });
+  }
+  return out;
+}
+
 export function todayCompletion(state: AppState) {
   const activeHabits = state.habits.filter((h) => !h.archived);
   const today = todayStr();

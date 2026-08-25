@@ -18,12 +18,18 @@ maju sedikit.
 - **Project** — goal pribadi dengan milestones, target, deadline, dan status.
 - **Challenge** — tantangan singkat (7/14/30 hari) yang bisa diikuti dan ditandai tiap hari.
 - **Habit tracker** — kebiasaan kecil dengan visualisasi streak 14 hari.
-- **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari, dan (opsional)
-  respons refleksi singkat dari AI setelah nulis, pakai API key Groq/Gemini punya lo sendiri.
-  Lihat [Journal AI](#journal-ai-opsional-byok) di bawah buat setup-nya.
-- **Progress** — statistik dan visualisasi progress mingguan/bulanan, plus (opsional) refleksi
-  mingguan dari AI yang baca pola dari angka aktivitas lo (bukan isi journal). Pakai key BYOK
-  yang sama kayak Journal AI — lihat [Journal AI](#journal-ai-opsional-byok) di bawah.
+- **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari, mood check-in
+  opsional (5 tingkat, dari affect labeling — nyatain perasaan pakai kata terbukti bantu redain
+  intensitasnya), dan (opsional) respons refleksi singkat dari AI setelah nulis, pakai API key
+  Groq/Gemini punya lo sendiri. Lihat [Journal AI](#journal-ai-opsional-byok) di bawah buat setup-nya.
+- **Ngobrol** — companion chat AI (opsional, key BYOK yang sama) buat mikirin langkah kecil bareng,
+  gaya motivational interviewing (lebih banyak nanya balik daripada ceramah). Riwayat kesimpen di
+  device doang. Bukan pengganti psikolog/psikiater — ada guardrail bawaan buat ngarahin ke bantuan
+  profesional kalau kedeteksi tanda krisis. Lihat [Journal AI](#journal-ai-opsional-byok) di bawah.
+- **Progress** — statistik dan visualisasi progress mingguan/bulanan, tren mood 14 hari terakhir
+  (dari journal), plus (opsional) refleksi mingguan dari AI yang baca pola dari angka aktivitas lo
+  (bukan isi journal). Pakai key BYOK yang sama kayak Journal AI — lihat
+  [Journal AI](#journal-ai-opsional-byok) di bawah.
 - **Explore** — ide project, challenge populer, habit ideas, skill, dan prompt journal.
 - **Profile** — bio, statistik, daftar project, dan achievement.
 - **Anak Kamar Plus** — upgrade sekali bayar (bukan langganan) yang buka batas project/habit
@@ -110,6 +116,11 @@ server cuma angka ringkasan aktivitas minggu ini (`lib/stats.ts#weeklySnapshot`:
 aktif, streak, checklist habit/challenge, journal entry), bukan isi journal-nya. User klik
 manual buat generate (nggak auto-fetch tiap buka halaman), hasilnya di-cache di `localStorage`
 per minggu kalender biar nggak boros API call pas dibuka ulang.
+
+Key yang sama juga dipakai buat **Ngobrol** (`/api/chat`, `app/chat/page.tsx`) — companion chat
+multi-turn, riwayatnya kesimpen di `localStorage` device itu doang (`lib/chat-store.ts`, key
+terpisah dari `AppState` biar nggak ikut backup export), nggak pernah dikirim/disimpan di server
+selain buat diteruskan ke Groq/Gemini tiap request.
 
 Buat deployer: `GROQ_API_KEY` / `GEMINI_API_KEY` di env bersifat opsional juga — cuma jadi
 default bersama buat user yang belum masukin key sendiri, dipakai kalau request nggak bawa key.

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { generateText, hasServerDefaultKey } from "@/lib/ai";
+import { AiRateLimitError, generateText, hasServerDefaultKey, rateLimitMessage } from "@/lib/ai";
 import type { WeeklySnapshot } from "@/lib/stats";
 
 const KEY_MAX_LENGTH = 200;
@@ -76,6 +76,9 @@ export async function POST(request: Request) {
     const insight = await generateText(SYSTEM_PROMPT, userPrompt, { groq, gemini });
     return NextResponse.json({ insight });
   } catch (err) {
+    if (err instanceof AiRateLimitError) {
+      return NextResponse.json({ error: rateLimitMessage(err) }, { status: 429 });
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.error("[insights/weekly] failed:", message);
     return NextResponse.json({ error: "Gagal bikin refleksi. Cek lagi API key lo di Profil." }, { status: 502 });

@@ -96,10 +96,27 @@ export interface HabitLog {
   date: string;
 }
 
+/**
+ * 1-5 self-report affect scale. Simplified from PANAS (Watson, Clark &
+ * Tellegen, 1988) down to a single valence dimension — precise enough for a
+ * daily check-in, light enough not to feel like a clinical instrument.
+ */
+export type MoodValue = 1 | 2 | 3 | 4 | 5;
+
+export const MOOD_OPTIONS: { value: MoodValue; emoji: string; label: string }[] = [
+  { value: 1, emoji: "😞", label: "Berat" },
+  { value: 2, emoji: "😕", label: "Kurang enak" },
+  { value: 3, emoji: "😐", label: "Biasa aja" },
+  { value: 4, emoji: "🙂", label: "Enak" },
+  { value: 5, emoji: "😄", label: "Semangat" },
+];
+
 export interface JournalEntry {
   id: string;
   prompt: string;
   content: string;
+  /** Optional — affect labeling (Lieberman et al., 2007) shows naming a feeling in words can itself lower its intensity. */
+  mood?: MoodValue;
   date: string;
   createdAt: string;
 }
