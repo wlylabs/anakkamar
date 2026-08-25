@@ -11,6 +11,7 @@ interface PremiumCtx {
   loading: boolean;
   user: User | null;
   isPlus: boolean;
+  isAdmin: boolean;
   signInWithEmail: (email: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
@@ -22,17 +23,23 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(supabaseConfigured);
   const [session, setSession] = useState<Session | null>(null);
   const [isPlus, setIsPlus] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const supabase = getSupabaseBrowserClient();
 
-  const loadProfile = useCallback(
-    async (userId: string) => {
-      if (!supabase) return;
-      const { data } = await supabase.from("profiles").select("is_plus").eq("id", userId).maybeSingle();
-      setIsPlus(Boolean(data?.is_plus));
-    },
-    [supabase],
-  );
+  // Admin bypass lives server-side (ADMIN_EMAIL never reaches the client),
+  // so status is whatever this route says — not a direct profiles read.
+  const loadStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/premium/status");
+      const body = (await res.json()) as { isPlus?: boolean; isAdmin?: boolean };
+      setIsPlus(Boolean(body.isPlus));
+      setIsAdmin(Boolean(body.isAdmin));
+    } catch {
+      setIsPlus(false);
+      setIsAdmin(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -42,7 +49,7 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
 
     void supabase.auth.getSession().then((result: { data: { session: Session | null } }) => {
       setSession(result.data.session);
-      if (result.data.session) void loadProfile(result.data.session.user.id);
+      if (result.data.session) void loadStatus();
       setLoading(false);
     });
 
@@ -50,12 +57,15 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event: string, next: Session | null) => {
       setSession(next);
-      if (next) void loadProfile(next.user.id);
-      else setIsPlus(false);
+      if (next) void loadStatus();
+      else {
+        setIsPlus(false);
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase, loadProfile]);
+  }, [supabase, loadStatus]);
 
   const signInWithEmail = useCallback(
     async (email: string) => {
@@ -74,8 +84,8 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   const refresh = useCallback(async () => {
-    if (session) await loadProfile(session.user.id);
-  }, [session, loadProfile]);
+    if (session) await loadStatus();
+  }, [session, loadStatus]);
 
   const value = useMemo<PremiumCtx>(
     () => ({
@@ -83,11 +93,12 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
       loading,
       user: session?.user ?? null,
       isPlus,
+      isAdmin,
       signInWithEmail,
       signOut,
       refresh,
     }),
-    [loading, session, isPlus, signInWithEmail, signOut, refresh],
+    [loading, session, isPlus, isAdmin, signInWithEmail, signOut, refresh],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

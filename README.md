@@ -62,7 +62,9 @@ Setup:
    **Pengaturan → Konfigurasi**. Kalau pakai Production, pastiin minimal satu metode pembayaran
    (QRIS/GoPay) udah aktif di menu **Metode Pembayaran** — akun baru kadang perlu verifikasi dulu.
 3. **Admin** — set `ADMIN_EMAIL` ke email akun yang boleh approve transfer manual (harus persis
-   sama kayak email yang dipakai sign-in).
+   sama kayak email yang dipakai sign-in). Akun ini juga otomatis dianggap Plus tanpa perlu
+   bayar (`app/api/premium/status`) — nggak masuk akal nyuruh pemilik app bayar ke appnya
+   sendiri buat testing.
 4. Copy `.env.example` ke `.env.local` dan isi semua key-nya.
 
 Alur teknis (QRIS/GoPay): `/plus` (pricing + sign-in) → user masuk pakai email magic-link
