@@ -4,6 +4,7 @@ import { BookHeart, Lock, Shuffle, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 
+import { AiStatusBadge } from "@/components/ai-status-badge";
 import { JournalIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,7 +27,13 @@ type Insight = { status: "loading" } | { status: "done"; text: string } | { stat
 
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
-  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
+  const {
+    keys: aiKeys,
+    hydrated: aiKeysHydrated,
+    active: aiActive,
+    source: aiSource,
+    checkingServer: aiChecking,
+  } = useAiKeys();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodValue | null>(null);
@@ -93,6 +100,7 @@ export default function JournalPage() {
         <Lock className="size-3.5" aria-hidden />
         Cuma lo yang bisa lihat ini.
       </p>
+      <AiStatusBadge active={aiActive} source={aiSource} checking={aiChecking} className="mt-2" />
 
       <Card className="mt-6">
         <div className="flex items-start justify-between gap-3">

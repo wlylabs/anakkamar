@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { AiStatusBadge } from "@/components/ai-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAiKeys } from "@/lib/ai-keys";
@@ -47,7 +48,13 @@ function writeCache(entry: Cached) {
 }
 
 export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
-  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
+  const {
+    keys: aiKeys,
+    hydrated: aiKeysHydrated,
+    active: aiActive,
+    source: aiSource,
+    checkingServer: aiChecking,
+  } = useAiKeys();
   const [cached, setCached] = useState<Cached | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -87,19 +94,25 @@ export function WeeklyReflection({ snapshot }: { snapshot: WeeklySnapshot }) {
 
   if (!aiActive) {
     return (
-      <Link
-        href="/profile"
-        className="mt-6 flex items-center gap-1.5 text-xs font-semibold text-ink-subtle hover:text-ink"
-      >
-        <Sparkles className="size-3.5" aria-hidden />
-        Aktifin refleksi mingguan AI, di Profil →
-      </Link>
+      <div className="mt-6 flex flex-col items-start gap-1.5">
+        <AiStatusBadge active={aiActive} source={aiSource} checking={aiChecking} />
+        {!aiChecking ? (
+          <Link
+            href="/profile"
+            className="flex items-center gap-1.5 text-xs font-semibold text-ink-subtle hover:text-ink"
+          >
+            <Sparkles className="size-3.5" aria-hidden />
+            Aktifin refleksi mingguan AI, di Profil →
+          </Link>
+        ) : null}
+      </div>
     );
   }
 
   return (
     <div className="mt-8">
-      <p className="text-label mb-3 text-ink-subtle">Refleksi mingguan AI</p>
+      <p className="text-label mb-1 text-ink-subtle">Refleksi mingguan AI</p>
+      <AiStatusBadge active={aiActive} source={aiSource} checking={aiChecking} className="mb-3" />
       <Card className="border-2 border-line bg-accent-soft">
         {current ? (
           <p className="text-sm leading-relaxed">{current.text}</p>

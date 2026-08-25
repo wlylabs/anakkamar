@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { AiStatusBadge } from "@/components/ai-status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -20,7 +21,13 @@ const STARTERS = [
 ];
 
 export default function ChatPage() {
-  const { keys: aiKeys, hydrated: aiKeysHydrated, active: aiActive } = useAiKeys();
+  const {
+    keys: aiKeys,
+    hydrated: aiKeysHydrated,
+    active: aiActive,
+    source: aiSource,
+    checkingServer: aiChecking,
+  } = useAiKeys();
   const { messages, hydrated: chatHydrated, addMessage, clear } = useChatHistory();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -78,6 +85,7 @@ export default function ChatPage() {
               Ngobrol
             </h1>
             <p className="mt-1 text-ink-muted">Teman ngobrol AI buat mikirin langkah kecil lo.</p>
+            <AiStatusBadge active={aiActive} source={aiSource} checking={aiChecking} className="mt-2" />
           </div>
           {messages.length > 0 ? (
             <button
