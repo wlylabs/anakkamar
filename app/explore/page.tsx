@@ -8,14 +8,7 @@ import { LinkButton } from "@/components/ui/button";
 import { FREE_HABIT_LIMIT } from "@/lib/premium";
 import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
-import {
-  CHALLENGES,
-  EXPLORE_ACTIVITIES,
-  HABIT_IDEAS,
-  JOURNAL_PROMPTS,
-  PROJECT_IDEAS,
-  SKILL_IDEAS,
-} from "@/lib/mock-data";
+import { CHALLENGES, EXPLORE_ACTIVITIES, HABIT_IDEAS, JOURNAL_PROMPTS, PROJECT_IDEAS } from "@/lib/mock-data";
 
 function SectionHeader({
   icon: Icon,
@@ -137,14 +130,9 @@ export default function ExplorePage() {
       <section className="mt-10">
         <SectionHeader icon={Lightbulb} title="Skill yang bisa dipelajari" />
         <div className="flex flex-wrap gap-2">
-          {SKILL_IDEAS.map((s) => (
-            <LinkButton
-              key={s}
-              href={`/projects/new?name=${encodeURIComponent("Belajar " + s)}&category=skill&days=30`}
-              variant="secondary"
-              size="sm"
-            >
-              {s}
+          {CHALLENGES.filter((c) => c.category === "skill").map((c) => (
+            <LinkButton key={c.id} href={`/challenges/${c.id}`} variant="secondary" size="sm">
+              {c.title.replace(/^\d+\s+Hari\s+/i, "")}
             </LinkButton>
           ))}
         </div>

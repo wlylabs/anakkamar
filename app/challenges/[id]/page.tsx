@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, Check, LogOut } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BookOpen, Check, ChevronDown, ChevronUp, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 import { CategoryBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ import { addDays, cn, formatDateID, todayStr } from "@/lib/utils";
 export default function ChallengeDetailPage() {
   const params = useParams<{ id: string }>();
   const { state, hydrated, joinChallenge, toggleChallengeDay, leaveChallenge } = useApp();
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   if (!hydrated) return null;
 
@@ -39,6 +42,14 @@ export default function ChallengeDetailPage() {
     ? Array.from({ length: template.durationDays }, (_, i) => addDays(joined.startDate, i))
     : [];
 
+  const pastOrTodayCount = days.filter((d) => d <= today).length;
+  const currentDayIndex = Math.max(0, Math.min(pastOrTodayCount - 1, template.durationDays - 1));
+  const activeDayIndex = selectedDay ?? currentDayIndex;
+  const activeDay = template.days[activeDayIndex];
+  const activeDate = days[activeDayIndex];
+  const activeChecked = activeDate ? joined?.checkedDates.includes(activeDate) : false;
+  const previewDay = template.days[0];
+
   return (
     <div className="mx-auto max-w-2xl px-5 pb-16 pt-8 md:px-8">
       <Link
@@ -55,10 +66,53 @@ export default function ChallengeDetailPage() {
       <p className="mt-3 leading-relaxed text-ink-muted">{template.description}</p>
       <p className="mt-2 text-sm font-semibold text-ink-subtle">{template.durationDays} hari</p>
 
+      <div className="mt-4 rounded-[var(--radius)] border-2 border-line-soft bg-canvas-alt px-4 py-3">
+        <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
+          <BookOpen className="size-3.5" aria-hidden />
+          Dasar kurikulum
+        </p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-subtle">{template.basis}</p>
+      </div>
+
+      {template.disclaimer ? (
+        <div className="mt-3 rounded-[var(--radius)] border-2 border-line bg-caution-soft px-4 py-3">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+            <AlertTriangle className="size-3.5" aria-hidden />
+            Penting
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-ink-muted">{template.disclaimer}</p>
+        </div>
+      ) : null}
+
       {!joined ? (
-        <Button variant="accent" size="lg" className="mt-6 w-full" onClick={() => joinChallenge(template.id)}>
-          Join challenge
-        </Button>
+        <>
+          <button
+            type="button"
+            onClick={() => setPreviewOpen((v) => !v)}
+            className="press mt-5 flex w-full items-center justify-between rounded-[var(--radius)] border-2 border-line-soft bg-surface px-4 py-3 text-sm font-semibold"
+          >
+            Preview hari pertama
+            {previewOpen ? (
+              <ChevronUp className="size-4 shrink-0" aria-hidden />
+            ) : (
+              <ChevronDown className="size-4 shrink-0" aria-hidden />
+            )}
+          </button>
+          {previewOpen && previewDay ? (
+            <Card className="mt-2 animate-fade">
+              <p className="text-label text-ink-subtle">Hari 1 — {previewDay.title}</p>
+              <p className="mt-2 text-sm leading-relaxed">{previewDay.lesson}</p>
+              <div className="mt-3 rounded-[var(--radius)] border-2 border-line-soft bg-accent-soft px-3.5 py-3">
+                <p className="text-label text-ink-subtle">Latihan hari ini</p>
+                <p className="mt-1 text-sm font-medium leading-relaxed">{previewDay.action}</p>
+              </div>
+            </Card>
+          ) : null}
+
+          <Button variant="accent" size="lg" className="mt-6 w-full" onClick={() => joinChallenge(template.id)}>
+            Join challenge
+          </Button>
+        </>
       ) : (
         <>
           <Card className="mt-6">
@@ -72,20 +126,22 @@ export default function ChallengeDetailPage() {
           </Card>
 
           <div className="mt-6">
-            <p className="text-label mb-3 text-ink-subtle">Tandai hari</p>
+            <p className="text-label mb-3 text-ink-subtle">Pilih hari</p>
             <div className="grid grid-cols-7 gap-2">
               {days.map((date, i) => {
                 const checked = joined.checkedDates.includes(date);
                 const isFuture = date > today;
+                const isSelected = i === activeDayIndex;
                 return (
                   <button
                     key={date}
                     type="button"
-                    disabled={isFuture}
-                    onClick={() => toggleChallengeDay(joined.id, date)}
+                    onClick={() => setSelectedDay(i)}
                     className={cn(
-                      "press flex aspect-square flex-col items-center justify-center rounded-[var(--radius)] border-2 border-line text-xs font-bold disabled:opacity-30",
-                      checked ? "bg-positive text-accent-ink" : "bg-surface",
+                      "press flex aspect-square flex-col items-center justify-center rounded-[var(--radius)] border-2 text-xs font-bold",
+                      checked ? "border-line bg-positive text-accent-ink" : "border-line bg-surface",
+                      isSelected ? "outline outline-2 outline-offset-1 outline-ink" : "",
+                      isFuture && !checked ? "opacity-40" : "",
                     )}
                     title={formatDateID(date)}
                   >
@@ -95,6 +151,35 @@ export default function ChallengeDetailPage() {
               })}
             </div>
           </div>
+
+          {activeDay ? (
+            <Card className="mt-4 border-2 border-line bg-accent-soft">
+              <p className="text-label text-ink-subtle">
+                Hari {activeDayIndex + 1} dari {template.durationDays}
+                {activeDate ? ` — ${formatDateID(activeDate)}` : ""}
+              </p>
+              <p className="mt-1 text-lg font-bold leading-snug">{activeDay.title}</p>
+              <p className="mt-2 text-sm leading-relaxed">{activeDay.lesson}</p>
+              <div className="mt-3 rounded-[var(--radius)] border-2 border-line bg-surface px-3.5 py-3">
+                <p className="text-label text-ink-subtle">Latihan hari ini</p>
+                <p className="mt-1 text-sm font-medium leading-relaxed">{activeDay.action}</p>
+              </div>
+              {activeDate && activeDate <= today ? (
+                <Button
+                  variant={activeChecked ? "secondary" : "accent"}
+                  size="sm"
+                  className="mt-4 w-full"
+                  onClick={() => toggleChallengeDay(joined.id, activeDate)}
+                >
+                  {activeChecked ? "Batalin tanda kelar" : "Tandai kelar"}
+                </Button>
+              ) : (
+                <p className="mt-4 text-center text-xs text-ink-subtle">
+                  Belum waktunya — kebuka {activeDate ? formatDateID(activeDate) : ""}
+                </p>
+              )}
+            </Card>
+          ) : null}
 
           <button
             type="button"
