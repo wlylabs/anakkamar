@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { JournalIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Textarea } from "@/components/ui/field";
 import { JOURNAL_PROMPTS } from "@/lib/mock-data";
@@ -25,6 +26,7 @@ export default function JournalPage() {
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodValue | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
@@ -114,9 +116,7 @@ export default function JournalPage() {
                   </p>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm("Hapus catatan ini? Nggak bisa dibalikin.")) deleteJournalEntry(entry.id);
-                    }}
+                    onClick={() => setDeleteTarget(entry.id)}
                     className="press flex size-7 shrink-0 items-center justify-center rounded-[var(--radius)] text-ink-subtle hover:text-critical"
                     aria-label="Hapus catatan"
                   >
@@ -130,6 +130,17 @@ export default function JournalPage() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Hapus catatan ini?"
+        description="Nggak bisa dibalikin."
+        onConfirm={() => {
+          if (deleteTarget) deleteJournalEntry(deleteTarget);
+          setDeleteTarget(null);
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

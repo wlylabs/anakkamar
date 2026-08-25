@@ -1,6 +1,6 @@
 "use client";
 
-import { Archive, Check, Flame, Plus, Sprout, X } from "lucide-react";
+import { Archive, Check, Flame, Plus, Sprout, Timer, X } from "lucide-react";
 import { useState } from "react";
 
 import { HabitsIllustration } from "@/components/illustrations";
@@ -9,6 +9,7 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/field";
+import { Stopwatch } from "@/components/ui/stopwatch";
 import { HABIT_IDEAS } from "@/lib/mock-data";
 import { FREE_HABIT_LIMIT } from "@/lib/premium";
 import { usePremium } from "@/lib/premium-context";
@@ -23,6 +24,7 @@ export default function HabitsPage() {
   const { isPlus } = usePremium();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
+  const [timerFor, setTimerFor] = useState<string | null>(null);
 
   if (!hydrated) return null;
 
@@ -128,6 +130,18 @@ export default function HabitsPage() {
                     ) : null}
                     <button
                       type="button"
+                      onClick={() => setTimerFor((cur) => (cur === h.id ? null : h.id))}
+                      className={cn(
+                        "press flex size-8 items-center justify-center rounded-[var(--radius)] border-2 text-ink-subtle",
+                        timerFor === h.id ? "border-line bg-accent-soft text-ink" : "border-line-soft",
+                      )}
+                      aria-pressed={timerFor === h.id}
+                      aria-label={`Timer sesi ${h.name}`}
+                    >
+                      <Timer className="size-3.5" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => archiveHabit(h.id)}
                       className="press flex size-8 items-center justify-center rounded-[var(--radius)] border-2 border-line-soft text-ink-subtle"
                       aria-label={`Arsipkan ${h.name}`}
@@ -136,6 +150,12 @@ export default function HabitsPage() {
                     </button>
                   </div>
                 </div>
+
+                {timerFor === h.id ? (
+                  <div className="mt-4 animate-fade rounded-[var(--radius)] border-2 border-line-soft bg-canvas-alt p-4">
+                    <Stopwatch />
+                  </div>
+                ) : null}
 
                 <div className="mt-4 grid grid-cols-7 gap-1.5 sm:grid-cols-[repeat(14,minmax(0,1fr))]">
                   {days.map((date) => {

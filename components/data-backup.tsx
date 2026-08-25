@@ -3,6 +3,7 @@
 import { Download, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useApp } from "@/lib/store";
 import type { AppState } from "@/lib/types";
 
@@ -17,6 +18,7 @@ export function DataBackup() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [imported, setImported] = useState(false);
+  const [pendingImport, setPendingImport] = useState<Partial<AppState> | null>(null);
 
   const handleExport = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -48,29 +50,28 @@ export function DataBackup() {
         setError("File ini bukan backup Anak Kamar yang valid.");
         return;
       }
-      if (
-        !window.confirm(
-          "Impor data ini bakal nimpa semua data yang ada sekarang di device ini (project, habit, journal, dll). Lanjut?",
-        )
-      ) {
-        return;
-      }
-      replaceState({
-        version: 1,
-        onboarded: true,
-        profile: { ...state.profile, ...parsed.profile },
-        projects: parsed.projects ?? [],
-        joinedChallenges: parsed.joinedChallenges ?? [],
-        habits: parsed.habits ?? [],
-        habitLogs: parsed.habitLogs ?? [],
-        journalEntries: parsed.journalEntries ?? [],
-        activeDates: parsed.activeDates ?? [],
-        unlockedAchievements: parsed.unlockedAchievements ?? [],
-      });
-      setImported(true);
+      setPendingImport(parsed);
     } catch {
       setError("Gagal baca file itu. Pastiin ini file backup .json dari Anak Kamar.");
     }
+  };
+
+  const confirmImport = () => {
+    if (!pendingImport) return;
+    replaceState({
+      version: 1,
+      onboarded: true,
+      profile: { ...state.profile, ...pendingImport.profile },
+      projects: pendingImport.projects ?? [],
+      joinedChallenges: pendingImport.joinedChallenges ?? [],
+      habits: pendingImport.habits ?? [],
+      habitLogs: pendingImport.habitLogs ?? [],
+      journalEntries: pendingImport.journalEntries ?? [],
+      activeDates: pendingImport.activeDates ?? [],
+      unlockedAchievements: pendingImport.unlockedAchievements ?? [],
+    });
+    setPendingImport(null);
+    setImported(true);
   };
 
   return (
@@ -107,6 +108,15 @@ export function DataBackup() {
       </div>
       {imported ? <p className="mt-2 text-sm font-medium text-positive">Data berhasil diimpor.</p> : null}
       {error ? <p className="mt-2 text-sm font-medium text-critical">{error}</p> : null}
+
+      <ConfirmDialog
+        open={pendingImport !== null}
+        title="Timpa data yang ada sekarang?"
+        description="Impor data ini bakal nimpa semua data yang ada sekarang di device ini (project, habit, journal, dll). Nggak bisa dibalikin."
+        confirmLabel="Timpa"
+        onConfirm={confirmImport}
+        onCancel={() => setPendingImport(null)}
+      />
     </div>
   );
 }

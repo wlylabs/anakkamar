@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ArrowLeft, BookOpen, Check, ChevronDown, ChevronUp, LogOut } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BookOpen, Check, ChevronDown, ChevronUp, LogOut, Timer } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,7 +8,9 @@ import { useEffect, useState } from "react";
 import { CategoryBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProgressBar } from "@/components/ui/progress";
+import { Stopwatch } from "@/components/ui/stopwatch";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CHALLENGES } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
@@ -19,12 +21,15 @@ export default function ChallengeDetailPage() {
   const { state, hydrated, joinChallenge, toggleChallengeDay, leaveChallenge } = useApp();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
 
   // This component instance is reused across client-side navigations between
   // /challenges/[id] routes, so a day picked on one challenge must not leak
   // into another challenge's (possibly shorter) day grid.
   useEffect(() => {
     setSelectedDay(null);
+    setShowTimer(false);
   }, [params.id]);
 
   if (!hydrated) return null;
@@ -172,14 +177,36 @@ export default function ChallengeDetailPage() {
                 <p className="mt-1 text-sm font-medium leading-relaxed">{activeDay.action}</p>
               </div>
               {activeDate && activeDate <= today ? (
-                <Button
-                  variant={activeChecked ? "secondary" : "accent"}
-                  size="sm"
-                  className="mt-4 w-full"
-                  onClick={() => toggleChallengeDay(joined.id, activeDate)}
-                >
-                  {activeChecked ? "Batalin tanda kelar" : "Tandai kelar"}
-                </Button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowTimer((v) => !v)}
+                    className="press mt-3 flex w-full items-center justify-between rounded-[var(--radius)] border-2 border-line bg-surface px-3.5 py-2.5 text-sm font-semibold"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Timer className="size-4" aria-hidden />
+                      Timer sesi
+                    </span>
+                    {showTimer ? (
+                      <ChevronUp className="size-4 shrink-0" aria-hidden />
+                    ) : (
+                      <ChevronDown className="size-4 shrink-0" aria-hidden />
+                    )}
+                  </button>
+                  {showTimer ? (
+                    <div className="mt-2 animate-fade rounded-[var(--radius)] border-2 border-line bg-surface p-4">
+                      <Stopwatch />
+                    </div>
+                  ) : null}
+                  <Button
+                    variant={activeChecked ? "secondary" : "accent"}
+                    size="sm"
+                    className="mt-3 w-full"
+                    onClick={() => toggleChallengeDay(joined.id, activeDate)}
+                  >
+                    {activeChecked ? "Batalin tanda kelar" : "Tandai kelar"}
+                  </Button>
+                </>
               ) : (
                 <p className="mt-4 text-center text-xs text-ink-subtle">
                   Belum waktunya — kebuka {activeDate ? formatDateID(activeDate) : ""}
@@ -190,12 +217,24 @@ export default function ChallengeDetailPage() {
 
           <button
             type="button"
-            onClick={() => leaveChallenge(joined.id)}
+            onClick={() => setConfirmLeave(true)}
             className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-critical"
           >
             <LogOut className="size-4" aria-hidden />
             Berhenti dari challenge ini
           </button>
+
+          <ConfirmDialog
+            open={confirmLeave}
+            title="Berhenti dari challenge ini?"
+            description="Progress yang udah lo tandai tetep kesimpen, tapi challenge ini nggak lagi dianggap lagi berjalan."
+            confirmLabel="Berhenti"
+            onConfirm={() => {
+              leaveChallenge(joined.id);
+              setConfirmLeave(false);
+            }}
+            onCancel={() => setConfirmLeave(false)}
+          />
         </>
       )}
     </div>
