@@ -61,22 +61,35 @@ Setup:
    **Payment Notification URL** ke `https://domain-lo.com/api/midtrans/webhook` di
    **Pengaturan → Konfigurasi**. Kalau pakai Production, pastiin minimal satu metode pembayaran
    (QRIS/GoPay) udah aktif di menu **Metode Pembayaran** — akun baru kadang perlu verifikasi dulu.
-3. Copy `.env.example` ke `.env.local` dan isi semua key-nya.
+3. **Admin** — set `ADMIN_EMAIL` ke email akun yang boleh approve transfer manual (harus persis
+   sama kayak email yang dipakai sign-in).
+4. Copy `.env.example` ke `.env.local` dan isi semua key-nya.
 
-Alur teknis: `/plus` (pricing + sign-in) → user masuk pakai email magic-link (Supabase Auth,
-nggak perlu password) → pilih QRIS/GoPay → `POST /api/checkout` bikin Core API charge, simpan
-baris `purchases` berstatus `pending`, balikin URL gambar QR → `CustomCheckout`
-(`components/plus/custom-checkout.tsx`) nampilin QR itu dalam kartu bergaya Anak Kamar sendiri
-(bukan iframe Midtrans) sambil poll `GET /api/checkout/status` tiap beberapa detik → begitu
-Midtrans call `POST /api/midtrans/webhook`, webhook verifikasi signature, update
+Alur teknis (QRIS/GoPay): `/plus` (pricing + sign-in) → user masuk pakai email magic-link
+(Supabase Auth, nggak perlu password) → pilih QRIS/GoPay → `POST /api/checkout` bikin Core API
+charge, simpan baris `purchases` berstatus `pending`, balikin URL gambar QR →
+`CustomCheckout` (`components/plus/custom-checkout.tsx`) nampilin QR itu dalam kartu bergaya
+Anak Kamar sendiri (bukan iframe Midtrans) sambil poll `GET /api/checkout/status` tiap beberapa
+detik → begitu Midtrans call `POST /api/midtrans/webhook`, webhook verifikasi signature, update
 `purchases.status`, dan set `profiles.is_plus = true` — status itu yang dibaca balik sama
-polling di client. Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`)
-dicek di `usePremium()` (`lib/premium-context.tsx`).
+polling di client.
+
+**Fallback transfer manual** (dipakai selagi akun Midtrans belum ada channel pembayaran
+aktif): pilih "Transfer DANA" di `/plus` → nomor DANA (`lib/premium.ts`) ditampilin, user isi
+catatan opsional dan klik "Saya sudah transfer" → bikin baris `purchases` (`method:
+"dana_manual"`, status `pending`) tanpa nyentuh Midtrans sama sekali → halaman poll status yang
+sama kayak QRIS. Admin buka **`/admin/plus`** (nggak ada di nav, akses langsung lewat URL),
+lihat daftar transfer yang nunggu, klik **Approve** setelah ngecek mutasi DANA masuk beneran —
+itu langsung nge-set `purchases.status = 'settlement'` dan `profiles.is_plus = true` lewat
+service role (RLS block user biasa dari ngubah status pembayaran sendiri).
+
+Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di
+`usePremium()` (`lib/premium-context.tsx`).
 
 ## Struktur
 
 ```
-app/            routes (App Router), termasuk /plus, /auth/callback, /api/checkout, /api/midtrans/webhook
+app/            routes (App Router), termasuk /plus, /admin/plus, /auth/callback, /api/checkout, /api/midtrans/webhook
 components/     UI primitives, nav, PWA, checkout button
 lib/            types, mock data, store (localStorage), stats, premium/Supabase/Midtrans helpers
 supabase/       schema.sql — jalanin sekali di SQL Editor
