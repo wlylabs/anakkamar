@@ -7,8 +7,11 @@ import { CategoryBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { LimitBanner } from "@/components/plus/limit-banner";
 import { ProgressBar } from "@/components/ui/progress";
 import { CATEGORY_COLOR } from "@/lib/category";
+import { FREE_PROJECT_LIMIT } from "@/lib/premium";
+import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
 import { PROJECT_STATUS_LABEL, type ProjectStatus } from "@/lib/types";
 import { formatDateID } from "@/lib/utils";
@@ -17,7 +20,10 @@ const ORDER: ProjectStatus[] = ["berjalan", "belum-mulai", "berhenti-sementara",
 
 export default function ProjectsPage() {
   const { state, hydrated } = useApp();
+  const { isPlus } = usePremium();
   if (!hydrated) return null;
+
+  const atLimit = !isPlus && state.projects.length >= FREE_PROJECT_LIMIT;
 
   const groups = ORDER.map((status) => ({
     status,
@@ -31,11 +37,20 @@ export default function ProjectsPage() {
           <h1 className="text-display text-3xl">Project gue</h1>
           <p className="mt-1 text-ink-muted">Goal-goal kecil yang lagi lo kejar.</p>
         </div>
-        <LinkButton href="/projects/new" size="sm" variant="accent" className="shrink-0">
+        <LinkButton
+          href={atLimit ? "/plus" : "/projects/new"}
+          size="sm"
+          variant="accent"
+          className="shrink-0"
+        >
           <Plus className="size-4" aria-hidden />
           Project baru
         </LinkButton>
       </div>
+
+      {atLimit ? (
+        <LimitBanner used={state.projects.length} limit={FREE_PROJECT_LIMIT} itemLabel="project" />
+      ) : null}
 
       {state.projects.length === 0 ? (
         <EmptyState

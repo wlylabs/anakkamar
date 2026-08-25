@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { FieldError, Input, Label, Textarea } from "@/components/ui/field";
 import { CATEGORY_COLOR } from "@/lib/category";
+import { FREE_PROJECT_LIMIT } from "@/lib/premium";
+import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
 import { FOCUS_AREAS, type FocusArea } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,7 +19,8 @@ const DURATIONS = [7, 14, 30];
 function NewProjectForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const { createProject } = useApp();
+  const { createProject, state, hydrated } = useApp();
+  const { isPlus } = usePremium();
 
   const [name, setName] = useState(params.get("name") ?? "");
   const [description, setDescription] = useState("");
@@ -45,6 +48,18 @@ function NewProjectForm() {
     });
     router.push(`/projects/${id}`);
   };
+
+  if (hydrated && !isPlus && state.projects.length >= FREE_PROJECT_LIMIT) {
+    return (
+      <div className="mx-auto max-w-xl px-5 pb-16 pt-8 md:px-8 text-center">
+        <p className="text-lg font-bold">Project gratis lo udah penuh ({FREE_PROJECT_LIMIT}/{FREE_PROJECT_LIMIT}).</p>
+        <p className="mt-2 text-sm text-ink-muted">Upgrade ke Plus buat bikin project unlimited.</p>
+        <LinkButton href="/plus" variant="accent" size="lg" className="mt-6">
+          Lihat Anak Kamar Plus
+        </LinkButton>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-xl px-5 pb-16 pt-8 md:px-8">

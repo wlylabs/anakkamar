@@ -3,11 +3,14 @@
 import { Archive, Check, Flame, Plus, Sprout, X } from "lucide-react";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { LimitBanner } from "@/components/plus/limit-banner";
+import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/field";
 import { HABIT_IDEAS } from "@/lib/mock-data";
+import { FREE_HABIT_LIMIT } from "@/lib/premium";
+import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
 import { addDays, cn, todayStr } from "@/lib/utils";
 
@@ -16,17 +19,19 @@ const WINDOW_DAYS = 14;
 export default function HabitsPage() {
   const { state, hydrated, createHabit, toggleHabitDate, isHabitDoneOn, habitStreak, archiveHabit } =
     useApp();
+  const { isPlus } = usePremium();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
 
   if (!hydrated) return null;
 
   const activeHabits = state.habits.filter((h) => !h.archived);
+  const atLimit = !isPlus && activeHabits.length >= FREE_HABIT_LIMIT;
   const today = todayStr();
   const days = Array.from({ length: WINDOW_DAYS }, (_, i) => addDays(today, -(WINDOW_DAYS - 1 - i)));
 
   const handleAdd = (habitName: string) => {
-    if (!habitName.trim()) return;
+    if (!habitName.trim() || atLimit) return;
     createHabit(habitName.trim());
     setName("");
     setShowForm(false);
@@ -42,13 +47,24 @@ export default function HabitsPage() {
           </h1>
           <p className="mt-1 text-ink-muted">Kebiasaan kecil, diulang tiap hari.</p>
         </div>
-        <Button size="sm" variant="accent" onClick={() => setShowForm((v) => !v)} className="shrink-0">
-          {showForm ? <X className="size-4" aria-hidden /> : <Plus className="size-4" aria-hidden />}
-          {showForm ? "Batal" : "Habit baru"}
-        </Button>
+        {atLimit ? (
+          <LinkButton href="/plus" size="sm" variant="accent" className="shrink-0">
+            <Plus className="size-4" aria-hidden />
+            Habit baru
+          </LinkButton>
+        ) : (
+          <Button size="sm" variant="accent" onClick={() => setShowForm((v) => !v)} className="shrink-0">
+            {showForm ? <X className="size-4" aria-hidden /> : <Plus className="size-4" aria-hidden />}
+            {showForm ? "Batal" : "Habit baru"}
+          </Button>
+        )}
       </div>
 
-      {showForm ? (
+      {atLimit ? (
+        <LimitBanner used={activeHabits.length} limit={FREE_HABIT_LIMIT} itemLabel="habit" />
+      ) : null}
+
+      {showForm && !atLimit ? (
         <Card className="mb-6 animate-fade">
           <form
             onSubmit={(e) => {
