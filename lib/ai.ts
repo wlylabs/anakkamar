@@ -64,16 +64,21 @@ async function callGemini(apiKey: string, systemPrompt: string, userPrompt: stri
 export async function generateText(systemPrompt: string, userPrompt: string, keys: RequestKeys = {}) {
   const groqKey = keys.groq || GROQ_API_KEY;
   const geminiKey = keys.gemini || GEMINI_API_KEY;
+  let groqError: unknown;
 
   if (groqKey) {
     try {
       return await callGroq(groqKey, systemPrompt, userPrompt);
     } catch (err) {
+      groqError = err;
       console.error("[ai] Groq failed, falling back to Gemini:", err instanceof Error ? err.message : err);
     }
   }
   if (geminiKey) {
     return await callGemini(geminiKey, systemPrompt, userPrompt);
   }
+  // Distinguish "nothing configured" from "the only configured provider
+  // errored" — the latter shouldn't be reported as if no key was set.
+  if (groqError) throw groqError instanceof Error ? groqError : new Error(String(groqError));
   throw new Error("Nggak ada AI provider yang dikonfigurasi.");
 }

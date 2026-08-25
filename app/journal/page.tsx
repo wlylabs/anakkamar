@@ -2,7 +2,7 @@
 
 import { BookHeart, Lock, Shuffle, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { JournalIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,10 @@ export default function JournalPage() {
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [insight, setInsight] = useState<Insight | null>(null);
+  // Guards against out-of-order responses: if two entries are submitted in
+  // quick succession, an earlier (slower) fetch resolving after a later one
+  // must not clobber the insight card with a mismatched reflection.
+  const insightRequestId = useRef(0);
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
@@ -37,6 +41,7 @@ export default function JournalPage() {
   const aiActive = Boolean(aiKeys.groq || aiKeys.gemini);
 
   const fetchInsight = async (promptText: string, contentText: string) => {
+    const requestId = ++insightRequestId.current;
     setInsight({ status: "loading" });
     try {
       const res = await fetch("/api/journal/insight", {
@@ -50,10 +55,12 @@ export default function JournalPage() {
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { insight?: string };
+      if (requestId !== insightRequestId.current) return;
       // Best-effort — the entry's already saved locally, so a missing/failed
       // insight (bad key, rate-limited, offline) just skips the card.
       setInsight(res.ok && data.insight ? { status: "done", text: data.insight } : null);
     } catch {
+      if (requestId !== insightRequestId.current) return;
       setInsight(null);
     }
   };

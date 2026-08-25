@@ -3,7 +3,7 @@
 import { AlertTriangle, ArrowLeft, BookOpen, Check, ChevronDown, ChevronUp, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CategoryBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,13 @@ export default function ChallengeDetailPage() {
   const { state, hydrated, joinChallenge, toggleChallengeDay, leaveChallenge } = useApp();
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  // This component instance is reused across client-side navigations between
+  // /challenges/[id] routes, so a day picked on one challenge must not leak
+  // into another challenge's (possibly shorter) day grid.
+  useEffect(() => {
+    setSelectedDay(null);
+  }, [params.id]);
 
   if (!hydrated) return null;
 
