@@ -111,10 +111,11 @@ export function JournalIllustration({ className }: { className?: string }) {
       </g>
       <Sticker x={30} y={98} rotate={-8} fill="var(--positive-soft)">
         <path
-          d="M0 4C-4-2-2-6 1-4C2-5 5-2 0 4Z"
+          d="M0-6L1.5-1.5 6 0 1.5 1.5 0 6 -1.5 1.5 -6 0 -1.5-1.5Z"
           fill="var(--positive)"
         />
       </Sticker>
+      <circle cx={132} cy={94} r={4} fill="var(--info-soft)" stroke="var(--ink)" strokeWidth={2} />
     </svg>
   );
 }
