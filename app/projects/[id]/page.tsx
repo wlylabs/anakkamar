@@ -3,9 +3,11 @@
 import { ArrowLeft, Check, Lightbulb, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { CategoryBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProgressBar } from "@/components/ui/progress";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CATEGORY_TIPS } from "@/lib/mock-data";
@@ -19,6 +21,7 @@ export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { state, hydrated, toggleMilestone, setProjectStatus, deleteProject } = useApp();
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!hydrated) return null;
 
@@ -35,7 +38,6 @@ export default function ProjectDetailPage() {
   }
 
   const handleDelete = () => {
-    if (!window.confirm(`Hapus project "${project.name}"? Ini nggak bisa dibatalin.`)) return;
     deleteProject(project.id);
     router.push("/projects");
   };
@@ -142,12 +144,20 @@ export default function ProjectDetailPage() {
 
       <button
         type="button"
-        onClick={handleDelete}
+        onClick={() => setConfirmDelete(true)}
         className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-critical"
       >
         <Trash2 className="size-4" aria-hidden />
         Hapus project
       </button>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        title={`Hapus project "${project.name}"?`}
+        description="Ini nggak bisa dibatalin."
+        onConfirm={handleDelete}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   );
 }

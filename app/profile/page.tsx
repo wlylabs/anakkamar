@@ -4,7 +4,6 @@ import { Award, Lock, LogOut, Pencil, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { AiSettings } from "@/components/ai-settings";
 import { DataBackup } from "@/components/data-backup";
 import { InstallSection } from "@/components/pwa/install-prompt";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -148,14 +147,6 @@ export default function ProfilePage() {
               </LinkButton>
             )}
           </div>
-          {isAdmin ? (
-            <Link
-              href="/admin/plus"
-              className="mt-3 block text-xs font-semibold text-ink-muted hover:text-ink"
-            >
-              Kelola transfer manual →
-            </Link>
-          ) : null}
           {user ? (
             <button
               type="button"
@@ -213,10 +204,6 @@ export default function ProfilePage() {
       ) : null}
 
       <Card className="mt-8">
-        <AiSettings />
-      </Card>
-
-      <Card className="mt-4">
         <DataBackup />
       </Card>
 

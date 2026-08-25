@@ -55,56 +55,6 @@ export function challengeTitle(challengeId: string) {
 }
 
 /**
- * Plain numbers only — no habit/project/journal names or journal content —
- * so it's safe to send to a third-party AI provider under BYOK for the
- * weekly reflection. See app/api/insights/weekly/route.ts.
- */
-export interface WeeklySnapshot {
-  activeDaysThisWeek: number;
-  currentStreak: number;
-  longestHabitStreak: number;
-  activeHabitsCount: number;
-  habitChecksThisWeek: number;
-  activeChallengesCount: number;
-  challengeChecksThisWeek: number;
-  activeProjectsCount: number;
-  completedProjectsCount: number;
-  journalEntriesThisWeek: number;
-}
-
-export function weeklySnapshot(state: AppState): WeeklySnapshot {
-  const since = addDays(todayStr(), -6);
-  const inThisWeek = (date: string) => date >= since && date <= todayStr();
-
-  const activeHabits = state.habits.filter((h) => !h.archived);
-  const activeHabitIds = new Set(activeHabits.map((h) => h.id));
-  const habitChecksThisWeek = state.habitLogs.filter(
-    (l) => inThisWeek(l.date) && activeHabitIds.has(l.habitId),
-  ).length;
-
-  const activeChallenges = state.joinedChallenges.filter((c) => c.status === "berjalan");
-  const challengeChecksThisWeek = activeChallenges.reduce(
-    (sum, c) => sum + c.checkedDates.filter(inThisWeek).length,
-    0,
-  );
-
-  const journalEntriesThisWeek = state.journalEntries.filter((j) => inThisWeek(j.date)).length;
-
-  return {
-    activeDaysThisWeek: weeklyActivity(state).filter((d) => d.active).length,
-    currentStreak: activityStreak(state),
-    longestHabitStreak: longestHabitStreak(state),
-    activeHabitsCount: activeHabits.length,
-    habitChecksThisWeek,
-    activeChallengesCount: activeChallenges.length,
-    challengeChecksThisWeek,
-    activeProjectsCount: state.projects.filter((p) => p.status === "berjalan").length,
-    completedProjectsCount: state.projects.filter((p) => p.status === "selesai").length,
-    journalEntriesThisWeek,
-  };
-}
-
-/**
  * Latest mood per calendar day over the last N days (most recent entry wins
  * when someone journals more than once in a day). `null` for days with no
  * entry — plotted as a gap, not a zero.

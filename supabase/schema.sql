@@ -35,8 +35,7 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- One row per checkout attempt. order_id is the Midtrans transaction id
--- (or a self-generated one for a manual transfer).
+-- One row per checkout attempt. order_id is the Midtrans transaction id.
 create table if not exists public.purchases (
   order_id text primary key,
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -46,10 +45,9 @@ create table if not exists public.purchases (
   updated_at timestamptz not null default now()
 );
 
--- Re-running this file on a database from before manual payments existed
--- adds these columns without touching existing rows.
+-- Re-running this file on a database from before this column existed adds it
+-- without touching existing rows.
 alter table public.purchases add column if not exists method text not null default 'qris';
-alter table public.purchases add column if not exists note text;
 
 alter table public.purchases enable row level security;
 
@@ -61,8 +59,7 @@ drop policy if exists "purchases: insert own pending" on public.purchases;
 create policy "purchases: insert own pending" on public.purchases
   for insert with check (auth.uid() = user_id and status = 'pending');
 
--- Status transitions (pending → settlement/expired/failed) happen either in
--- the Midtrans webhook or the admin approval route, both running as the
--- service role, which bypasses RLS — users cannot mark their own purchase
--- as paid, and can't read anyone else's purchases either (the admin routes
--- use the service role for that, gated by ADMIN_EMAIL server-side).
+-- Status transitions (pending → settlement/expired/failed) happen in the
+-- Midtrans webhook, running as the service role, which bypasses RLS — users
+-- cannot mark their own purchase as paid, and can't read anyone else's
+-- purchases either.

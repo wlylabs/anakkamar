@@ -3,7 +3,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-import { WeeklyReflection } from "@/components/progress/weekly-reflection";
 import { Card } from "@/components/ui/card";
 import {
   activityStreak,
@@ -13,7 +12,6 @@ import {
   moodTrend,
   projectStats,
   weeklyActivity,
-  weeklySnapshot,
 } from "@/lib/stats";
 import { useApp } from "@/lib/store";
 import { MOOD_OPTIONS } from "@/lib/types";
@@ -38,7 +36,6 @@ export default function ProgressPage() {
   const week = weeklyActivity(state);
   const month = monthlyActivity(state);
   const activeDaysTotal = new Set(state.activeDates).size;
-  const snapshot = weeklySnapshot(state);
   const mood = moodTrend(state);
   const moodLoggedCount = mood.filter((d) => d.mood !== null).length;
 
@@ -140,8 +137,6 @@ export default function ProgressPage() {
           </Card>
         )}
       </div>
-
-      <WeeklyReflection snapshot={snapshot} />
     </div>
   );
 }

@@ -1,17 +1,16 @@
 "use client";
 
-import { Check, CheckCircle2, Copy, ExternalLink, QrCode, RefreshCw, Smartphone, Wallet, X } from "lucide-react";
+import { CheckCircle2, ExternalLink, QrCode, RefreshCw, Smartphone, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/field";
 import { usePremium } from "@/lib/premium-context";
-import { DANA_NUMBER, formatIDR, PLUS_PRICE_IDR } from "@/lib/premium";
+import { formatIDR, PLUS_PRICE_IDR } from "@/lib/premium";
 import { cn } from "@/lib/utils";
 
-type Method = "qris" | "gopay" | "dana_manual";
-type Phase = "pick" | "manual-form" | "loading" | "waiting" | "success" | "expired" | "rejected" | "error";
+type Method = "qris" | "gopay";
+type Phase = "pick" | "loading" | "waiting" | "success" | "expired" | "rejected" | "error";
 
 interface ChargeInfo {
   orderId: string;
@@ -24,7 +23,6 @@ interface ChargeInfo {
 const METHODS: { id: Method; label: string; icon: typeof QrCode; hint: string }[] = [
   { id: "qris", label: "QRIS", icon: QrCode, hint: "Scan pakai e-wallet atau m-banking apa aja" },
   { id: "gopay", label: "GoPay", icon: Smartphone, hint: "Bayar langsung dari aplikasi Gojek" },
-  { id: "dana_manual", label: "Transfer DANA", icon: Wallet, hint: "Diverifikasi manual, agak lebih lama" },
 ];
 
 function formatCountdown(seconds: number) {
@@ -38,8 +36,6 @@ export function CustomCheckout() {
   const [phase, setPhase] = useState<Phase>("pick");
   const [charge, setCharge] = useState<ChargeInfo | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [note, setNote] = useState("");
-  const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const pollRef = useRef<number | null>(null);
   const countdownRef = useRef<number | null>(null);
@@ -78,21 +74,20 @@ export function CustomCheckout() {
     [refresh, stopTimers],
   );
 
-  const submitCheckout = async (method: Method, body: Record<string, unknown> = {}) => {
+  const submitCheckout = async (method: Method) => {
     setPhase("loading");
     setErrorMsg(null);
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ method, ...body }),
+        body: JSON.stringify({ method }),
       });
       const result = (await res.json()) as {
         orderId?: string;
         qrImageUrl?: string;
         deeplinkUrl?: string | null;
         expiresInSeconds?: number;
-        manual?: boolean;
         error?: string;
       };
       if (!res.ok || !result.orderId) {
@@ -136,18 +131,7 @@ export function CustomCheckout() {
     stopTimers();
     setCharge(null);
     setErrorMsg(null);
-    setNote("");
     setPhase("pick");
-  };
-
-  const copyDana = async () => {
-    try {
-      await navigator.clipboard.writeText(DANA_NUMBER);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Clipboard permission denied — the number is still visible to copy by hand.
-    }
   };
 
   if (phase === "success") {
@@ -162,73 +146,7 @@ export function CustomCheckout() {
     );
   }
 
-  if (phase === "manual-form") {
-    return (
-      <div>
-        <div className="rounded-[var(--radius)] border-2 border-line bg-canvas-alt p-4">
-          <p className="text-label text-ink-subtle">Transfer ke nomor DANA</p>
-          <div className="mt-1.5 flex items-center justify-between gap-2">
-            <p className="text-xl font-bold tracking-tight">{DANA_NUMBER}</p>
-            <button
-              type="button"
-              onClick={() => void copyDana()}
-              className="press flex items-center gap-1 rounded-[var(--radius)] border-2 border-line bg-surface px-2.5 py-1.5 text-xs font-semibold"
-            >
-              {copied ? <Check className="size-3.5" aria-hidden /> : <Copy className="size-3.5" aria-hidden />}
-              {copied ? "Kesalin" : "Salin"}
-            </button>
-          </div>
-          <p className="mt-2 text-sm text-ink-muted">
-            Jumlah: <span className="font-semibold text-ink">{formatIDR(PLUS_PRICE_IDR)}</span> — pastiin
-            nominalnya pas biar gampang dicocokin.
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <Textarea
-            rows={2}
-            placeholder="Catatan (opsional) — misalnya nama pengirim kalau beda"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-        </div>
-
-        <div className="mt-3 flex gap-2">
-          <Button variant="secondary" size="sm" onClick={reset}>
-            Batal
-          </Button>
-          <Button
-            variant="accent"
-            size="sm"
-            className="flex-1"
-            onClick={() => void submitCheckout("dana_manual", { note })}
-          >
-            Saya sudah transfer
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   if (phase === "waiting" && charge) {
-    if (charge.method === "dana_manual") {
-      return (
-        <div className="flex flex-col items-center gap-3 py-4 text-center">
-          <div className="grid size-12 place-items-center rounded-full border-2 border-line bg-accent-soft">
-            <span className="size-2 animate-pulse rounded-full bg-accent" />
-          </div>
-          <p className="text-sm font-semibold">Nunggu verifikasi.</p>
-          <p className="max-w-xs text-sm text-ink-muted">
-            Transfer lo lagi dicek manual. Halaman ini otomatis update begitu udah di-approve —
-            nggak perlu refresh.
-          </p>
-          <button type="button" onClick={reset} className="text-xs font-semibold text-ink-subtle">
-            Batal
-          </button>
-        </div>
-      );
-    }
-
     return (
       <div className="flex flex-col items-center gap-4 py-2 text-center">
         {charge.qrImageUrl ? (
@@ -284,13 +202,13 @@ export function CustomCheckout() {
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5">
         {METHODS.map((m) => (
           <button
             key={m.id}
             type="button"
             disabled={phase === "loading"}
-            onClick={() => (m.id === "dana_manual" ? setPhase("manual-form") : void submitCheckout(m.id))}
+            onClick={() => void submitCheckout(m.id)}
             className={cn(
               "press flex flex-col items-center gap-1.5 rounded-[var(--radius)] border-2 border-line bg-surface p-3 text-center disabled:opacity-50",
             )}
