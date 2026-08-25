@@ -2,16 +2,21 @@ import "server-only";
 
 import crypto from "node:crypto";
 
-import { Snap } from "midtrans-client";
+import { CoreApi } from "midtrans-client";
 
 const SERVER_KEY = process.env.MIDTRANS_SERVER_KEY ?? "";
 const IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === "true";
 
 export const midtransConfigured = Boolean(SERVER_KEY);
 
-export function getSnapClient() {
+/**
+ * Core API, not Snap — we render the QR / payment UI ourselves instead of
+ * handing off to Midtrans's hosted popup, so it can look like the rest of
+ * the app instead of a generic white Midtrans page.
+ */
+export function getCoreApiClient() {
   if (!midtransConfigured) return null;
-  return new Snap({ isProduction: IS_PRODUCTION, serverKey: SERVER_KEY });
+  return new CoreApi({ isProduction: IS_PRODUCTION, serverKey: SERVER_KEY });
 }
 
 /**

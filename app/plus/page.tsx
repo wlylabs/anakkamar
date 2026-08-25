@@ -3,7 +3,7 @@
 import { Check, Mail, Sparkles } from "lucide-react";
 import { useState } from "react";
 
-import { SnapCheckoutButton } from "@/components/plus/snap-checkout-button";
+import { CustomCheckout } from "@/components/plus/custom-checkout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/field";
@@ -99,7 +99,7 @@ export default function PlusPage() {
               Lo udah punya Anak Kamar Plus. Makasih udah dukung!
             </p>
           ) : user ? (
-            <SnapCheckoutButton />
+            <CustomCheckout />
           ) : (
             <SignInForm />
           )}

@@ -29,7 +29,8 @@ maju sedikit.
 
 Next.js (App Router) + TypeScript + Tailwind CSS v4 + Geist font + lucide-react. Data goal/habit/
 journal tersimpan di `localStorage` (nggak butuh akun) lewat context di `lib/store.tsx`. Akun +
-status Plus pakai Supabase (auth email magic-link + Postgres), pembayaran pakai Midtrans Snap.
+status Plus pakai Supabase (auth email magic-link + Postgres), pembayaran pakai Midtrans Core API
+dengan UI QRIS/GoPay custom (bukan popup Snap) biar senada sama desain app.
 
 PWA: `app/manifest.ts`, `public/sw.js` (offline shell fallback), dan install prompt
 (`components/pwa/`) — bisa di-install ke home screen dan tetap kebuka pas offline.
@@ -55,17 +56,22 @@ Setup:
 
 1. **Supabase** — bikin project baru, terus jalanin `supabase/schema.sql` di SQL Editor (bikin
    tabel `profiles` + `purchases`, trigger auto-create profile, dan RLS policy).
-2. **Midtrans** — dari dashboard, ambil Server Key & Client Key (Sandbox dulu buat testing) di
-   **Pengaturan → Akses Integrasi**. Set **Payment Notification URL** ke
-   `https://domain-lo.com/api/midtrans/webhook` di **Pengaturan → Konfigurasi**.
+2. **Midtrans** — dari dashboard, ambil **Server Key** (Sandbox dulu buat testing) di
+   **Pengaturan → Akses Integrasi** — nggak butuh Client Key, kita nggak pakai Snap. Set
+   **Payment Notification URL** ke `https://domain-lo.com/api/midtrans/webhook` di
+   **Pengaturan → Konfigurasi**. Kalau pakai Production, pastiin minimal satu metode pembayaran
+   (QRIS/GoPay) udah aktif di menu **Metode Pembayaran** — akun baru kadang perlu verifikasi dulu.
 3. Copy `.env.example` ke `.env.local` dan isi semua key-nya.
 
 Alur teknis: `/plus` (pricing + sign-in) → user masuk pakai email magic-link (Supabase Auth,
-nggak perlu password) → `POST /api/checkout` bikin transaksi Midtrans Snap & simpan baris
-`purchases` berstatus `pending` → popup Snap muncul di client → Midtrans call
-`POST /api/midtrans/webhook` pas status berubah → webhook verifikasi signature, update
-`purchases.status`, dan set `profiles.is_plus = true`. Batas gratis (`FREE_PROJECT_LIMIT`,
-`FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di `usePremium()` (`lib/premium-context.tsx`).
+nggak perlu password) → pilih QRIS/GoPay → `POST /api/checkout` bikin Core API charge, simpan
+baris `purchases` berstatus `pending`, balikin URL gambar QR → `CustomCheckout`
+(`components/plus/custom-checkout.tsx`) nampilin QR itu dalam kartu bergaya Anak Kamar sendiri
+(bukan iframe Midtrans) sambil poll `GET /api/checkout/status` tiap beberapa detik → begitu
+Midtrans call `POST /api/midtrans/webhook`, webhook verifikasi signature, update
+`purchases.status`, dan set `profiles.is_plus = true` — status itu yang dibaca balik sama
+polling di client. Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`)
+dicek di `usePremium()` (`lib/premium-context.tsx`).
 
 ## Struktur
 

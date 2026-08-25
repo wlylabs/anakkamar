@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 
-import { getSnapClient, midtransConfigured } from "@/lib/midtrans";
+import { getCoreApiClient, midtransConfigured } from "@/lib/midtrans";
 import { PLUS_PRICE_IDR, PLUS_PRODUCT_NAME } from "@/lib/premium";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
-export async function POST() {
+const EXPIRY_MINUTES = 15;
+type Method = "qris" | "gopay";
+
+function isMethod(value: unknown): value is Method {
+  return value === "qris" || value === "gopay";
+}
+
+export async function POST(request: Request) {
   try {
     const supabase = await getSupabaseServerClient();
     if (!supabase) {
@@ -12,6 +19,12 @@ export async function POST() {
     }
     if (!midtransConfigured) {
       return NextResponse.json({ error: "Midtrans belum dikonfigurasi." }, { status: 503 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const method = isMethod(body.method) ? body.method : null;
+    if (!method) {
+      return NextResponse.json({ error: "Metode pembayaran nggak valid." }, { status: 400 });
     }
 
     const {
@@ -31,21 +44,37 @@ export async function POST() {
       return NextResponse.json({ error: `DB: ${insertError.message}` }, { status: 500 });
     }
 
-    const snap = getSnapClient();
-    if (!snap) {
+    const coreApi = getCoreApiClient();
+    if (!coreApi) {
       return NextResponse.json({ error: "Midtrans belum dikonfigurasi." }, { status: 503 });
     }
 
     try {
-      const transaction = await snap.createTransaction({
+      const charge = await coreApi.charge({
+        payment_type: method,
         transaction_details: { order_id: orderId, gross_amount: PLUS_PRICE_IDR },
         customer_details: { email: user.email },
         item_details: [{ id: "plus-lifetime", price: PLUS_PRICE_IDR, quantity: 1, name: PLUS_PRODUCT_NAME }],
+        custom_expiry: { expiry_duration: EXPIRY_MINUTES, unit: "minute" },
       });
-      return NextResponse.json({ token: transaction.token });
+
+      const qrAction = charge.actions?.find((a) => a.name === "generate-qr-code");
+      const deeplinkAction = charge.actions?.find((a) => a.name === "deeplink-redirect");
+
+      if (!qrAction) {
+        console.error("[checkout] no QR action in Midtrans response:", JSON.stringify(charge));
+        return NextResponse.json({ error: "Midtrans nggak ngasih kode QR." }, { status: 502 });
+      }
+
+      return NextResponse.json({
+        orderId,
+        qrImageUrl: qrAction.url,
+        deeplinkUrl: deeplinkAction?.url ?? null,
+        expiresInSeconds: EXPIRY_MINUTES * 60,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error("[checkout] Midtrans createTransaction failed:", message);
+      console.error("[checkout] Midtrans charge failed:", message);
       return NextResponse.json({ error: `Midtrans: ${message}` }, { status: 502 });
     }
   } catch (err) {
