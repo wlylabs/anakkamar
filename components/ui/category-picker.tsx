@@ -10,13 +10,15 @@ export function CategoryPicker({
   value,
   onChange,
   className,
+  ariaLabel = "Kategori",
 }: {
   value: FocusArea | null;
   onChange: (area: FocusArea) => void;
   className?: string;
+  ariaLabel?: string;
 }) {
   return (
-    <div className={cn("stagger grid grid-cols-2 gap-3", className)} role="radiogroup">
+    <div className={cn("stagger grid grid-cols-2 gap-3", className)} role="radiogroup" aria-label={ariaLabel}>
       {FOCUS_AREAS.map((area, i) => {
         const active = value === area.id;
         return (
@@ -35,7 +37,7 @@ export function CategoryPicker({
             }
             className={cn(
               "press rounded-[var(--radius)] border-2 border-line bg-surface px-4 py-4 text-left text-sm font-semibold tracking-tight",
-              active && "shadow-pop-sm",
+              active ? "shadow-pop" : "shadow-pop-sm",
             )}
           >
             {area.label}
