@@ -18,7 +18,9 @@ maju sedikit.
 - **Project** — goal pribadi dengan milestones, target, deadline, dan status.
 - **Challenge** — tantangan singkat (7/14/30 hari) yang bisa diikuti dan ditandai tiap hari.
 - **Habit tracker** — kebiasaan kecil dengan visualisasi streak 14 hari.
-- **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari.
+- **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari, dan (opsional)
+  respons refleksi singkat dari AI setelah nulis. Lihat [Journal AI](#journal-ai-opsional) di
+  bawah buat setup-nya.
 - **Progress** — statistik dan visualisasi progress mingguan/bulanan.
 - **Explore** — ide project, challenge populer, habit ideas, skill, dan prompt journal.
 - **Profile** — bio, statistik, daftar project, dan achievement.
@@ -87,6 +89,14 @@ service role (RLS block user biasa dari ngubah status pembayaran sendiri).
 
 Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di
 `usePremium()` (`lib/premium-context.tsx`).
+
+## Journal AI (opsional)
+
+Setelah nulis journal entry, `/api/journal/insight` (`lib/ai.ts`) bisa balikin respons refleksi
+singkat 2-3 kalimat. Groq dicoba duluan (`GROQ_API_KEY` — console.groq.com, free tier gede,
+latency rendah), Gemini jadi fallback (`GEMINI_API_KEY` — aistudio.google.com) kalau Groq belum
+diisi atau errornya (limit, down). Kosongin dua-duanya buat nonaktifin fitur ini — entry tetap
+kesimpen normal di `localStorage`, cuma kartu refleksinya nggak muncul.
 
 ## Struktur
 

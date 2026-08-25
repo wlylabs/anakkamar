@@ -1,6 +1,6 @@
 "use client";
 
-import { BookHeart, Lock, Shuffle, Trash2 } from "lucide-react";
+import { BookHeart, Lock, Shuffle, Sparkles, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { JournalIllustration } from "@/components/illustrations";
@@ -19,21 +19,43 @@ function dayOfYear() {
   return Math.floor(diff / 86_400_000);
 }
 
+type Insight = { status: "loading" } | { status: "done"; text: string };
+
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
+  const [insight, setInsight] = useState<Insight | null>(null);
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
   if (!hydrated) return null;
 
+  const fetchInsight = async (promptText: string, contentText: string) => {
+    setInsight({ status: "loading" });
+    try {
+      const res = await fetch("/api/journal/insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: promptText, content: contentText }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { insight?: string };
+      // Best-effort — the entry's already saved locally, so a missing/failed
+      // insight (unconfigured, rate-limited, offline) just skips the card.
+      setInsight(res.ok && data.insight ? { status: "done", text: data.insight } : null);
+    } catch {
+      setInsight(null);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim()) return;
-    addJournalEntry(prompt, content.trim());
+    const submittedContent = content.trim();
+    if (!submittedContent) return;
+    addJournalEntry(prompt, submittedContent);
     setContent("");
     setPromptIndex((dayOfYear() + 1) % JOURNAL_PROMPTS.length);
+    void fetchInsight(prompt, submittedContent);
   };
 
   return (
@@ -71,6 +93,18 @@ export default function JournalPage() {
           </Button>
         </form>
       </Card>
+
+      {insight ? (
+        <Card className="mt-4 border-2 border-line bg-accent-soft">
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-ink-subtle">
+            <Sparkles className="size-3.5" aria-hidden />
+            Refleksi
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed">
+            {insight.status === "loading" ? "Lagi mikir..." : insight.text}
+          </p>
+        </Card>
+      ) : null}
 
       <div className="mt-8">
         {state.journalEntries.length === 0 ? (
