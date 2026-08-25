@@ -20,16 +20,9 @@ maju sedikit.
 - **Habit tracker** — kebiasaan kecil dengan visualisasi streak 14 hari.
 - **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari, mood check-in
   opsional (5 tingkat, dari affect labeling — nyatain perasaan pakai kata terbukti bantu redain
-  intensitasnya), dan (opsional) respons refleksi singkat dari AI setelah nulis, pakai API key
-  Groq/Gemini punya lo sendiri. Lihat [Journal AI](#journal-ai-opsional-byok) di bawah buat setup-nya.
-- **Ngobrol** — companion chat AI (opsional, key BYOK yang sama) buat mikirin langkah kecil bareng,
-  gaya motivational interviewing (lebih banyak nanya balik daripada ceramah). Riwayat kesimpen di
-  device doang. Bukan pengganti psikolog/psikiater — ada guardrail bawaan buat ngarahin ke bantuan
-  profesional kalau kedeteksi tanda krisis. Lihat [Journal AI](#journal-ai-opsional-byok) di bawah.
+  intensitasnya).
 - **Progress** — statistik dan visualisasi progress mingguan/bulanan, tren mood 14 hari terakhir
-  (dari journal), plus (opsional) refleksi mingguan dari AI yang baca pola dari angka aktivitas lo
-  (bukan isi journal). Pakai key BYOK yang sama kayak Journal AI — lihat
-  [Journal AI](#journal-ai-opsional-byok) di bawah.
+  (dari journal).
 - **Explore** — ide project, challenge populer, habit ideas, skill, dan prompt journal.
 - **Profile** — bio, statistik, daftar project, dan achievement.
 - **Anak Kamar Plus** — upgrade sekali bayar (bukan langganan) yang buka batas project/habit
@@ -97,33 +90,6 @@ service role (RLS block user biasa dari ngubah status pembayaran sendiri).
 
 Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di
 `usePremium()` (`lib/premium-context.tsx`).
-
-## Journal AI (opsional, BYOK)
-
-Setelah nulis journal entry, `/api/journal/insight` (`lib/ai.ts`) bisa balikin respons refleksi
-singkat 2-3 kalimat. Ini **bring-your-own-key**: tiap user masukin API key Groq/Gemini-nya
-sendiri (gratis) di **Profil → Refleksi AI di Journal** (`components/ai-settings.tsx`), lengkap
-sama tutorial cara bikin key-nya. Key kesimpen di `localStorage` device itu doang
-(`lib/ai-keys.ts`) — dikirim ke server cuma pas request buat diteruskan ke Groq/Gemini, nggak
-pernah kami simpan, dan sengaja dipisah dari `AppState` biar nggak ikut kebawa pas ekspor backup
-data. Groq dicoba duluan (free tier gede, latency rendah), Gemini jadi fallback kalau Groq
-errornya (limit, down) atau user cuma isi Gemini. Nggak masukin key = fitur ini nggak muncul,
-sisa app tetap jalan normal.
-
-Key yang sama juga dipakai buat **refleksi mingguan** di halaman Progress
-(`/api/insights/weekly`, `components/progress/weekly-reflection.tsx`) — bedanya, yang dikirim ke
-server cuma angka ringkasan aktivitas minggu ini (`lib/stats.ts#weeklySnapshot`: jumlah hari
-aktif, streak, checklist habit/challenge, journal entry), bukan isi journal-nya. User klik
-manual buat generate (nggak auto-fetch tiap buka halaman), hasilnya di-cache di `localStorage`
-per minggu kalender biar nggak boros API call pas dibuka ulang.
-
-Key yang sama juga dipakai buat **Ngobrol** (`/api/chat`, `app/chat/page.tsx`) — companion chat
-multi-turn, riwayatnya kesimpen di `localStorage` device itu doang (`lib/chat-store.ts`, key
-terpisah dari `AppState` biar nggak ikut backup export), nggak pernah dikirim/disimpan di server
-selain buat diteruskan ke Groq/Gemini tiap request.
-
-Buat deployer: `GROQ_API_KEY` / `GEMINI_API_KEY` di env bersifat opsional juga — cuma jadi
-default bersama buat user yang belum masukin key sendiri, dipakai kalau request nggak bawa key.
 
 ## Struktur
 

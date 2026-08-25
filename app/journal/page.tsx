@@ -1,16 +1,13 @@
 "use client";
 
-import { BookHeart, Lock, Shuffle, Sparkles, Trash2 } from "lucide-react";
-import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { BookHeart, Lock, Shuffle, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 
-import { AiStatusBadge } from "@/components/ai-status-badge";
 import { JournalIllustration } from "@/components/illustrations";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Textarea } from "@/components/ui/field";
-import { useAiKeys } from "@/lib/ai-keys";
 import { JOURNAL_PROMPTS } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 import { MOOD_OPTIONS, type MoodValue } from "@/lib/types";
@@ -23,61 +20,15 @@ function dayOfYear() {
   return Math.floor(diff / 86_400_000);
 }
 
-type Insight = { status: "loading" } | { status: "done"; text: string } | { status: "rate-limited"; text: string };
-
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
-  const {
-    keys: aiKeys,
-    hydrated: aiKeysHydrated,
-    active: aiActive,
-    source: aiSource,
-    checkingServer: aiChecking,
-  } = useAiKeys();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<MoodValue | null>(null);
-  const [insight, setInsight] = useState<Insight | null>(null);
-  // Guards against out-of-order responses: if two entries are submitted in
-  // quick succession, an earlier (slower) fetch resolving after a later one
-  // must not clobber the insight card with a mismatched reflection.
-  const insightRequestId = useRef(0);
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
-  if (!hydrated || !aiKeysHydrated) return null;
-
-  const fetchInsight = async (promptText: string, contentText: string) => {
-    const requestId = ++insightRequestId.current;
-    setInsight({ status: "loading" });
-    try {
-      const res = await fetch("/api/journal/insight", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: promptText,
-          content: contentText,
-          groqApiKey: aiKeys.groq,
-          geminiApiKey: aiKeys.gemini,
-        }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { insight?: string; error?: string };
-      if (requestId !== insightRequestId.current) return;
-      if (res.ok && data.insight) {
-        setInsight({ status: "done", text: data.insight });
-      } else if (res.status === 429 && data.error) {
-        // Rate limit is worth surfacing (so the entry not getting a
-        // reflection doesn't look broken) — anything else (bad key,
-        // offline) stays a silent skip since the entry's already saved.
-        setInsight({ status: "rate-limited", text: data.error });
-      } else {
-        setInsight(null);
-      }
-    } catch {
-      if (requestId !== insightRequestId.current) return;
-      setInsight(null);
-    }
-  };
+  if (!hydrated) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +38,6 @@ export default function JournalPage() {
     setContent("");
     setMood(null);
     setPromptIndex((dayOfYear() + 1) % JOURNAL_PROMPTS.length);
-    if (aiActive) void fetchInsight(prompt, submittedContent);
   };
 
   return (
@@ -100,7 +50,6 @@ export default function JournalPage() {
         <Lock className="size-3.5" aria-hidden />
         Cuma lo yang bisa lihat ini.
       </p>
-      <AiStatusBadge active={aiActive} source={aiSource} checking={aiChecking} className="mt-2" />
 
       <Card className="mt-6">
         <div className="flex items-start justify-between gap-3">
@@ -146,31 +95,6 @@ export default function JournalPage() {
           </Button>
         </form>
       </Card>
-
-      {insight ? (
-        <Card
-          className={cn(
-            "mt-4 border-2 border-line",
-            insight.status === "rate-limited" ? "bg-canvas-alt" : "bg-accent-soft",
-          )}
-        >
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-ink-subtle">
-            <Sparkles className="size-3.5" aria-hidden />
-            {insight.status === "rate-limited" ? "Refleksi AI lagi nggak bisa" : "Refleksi"}
-          </p>
-          <p className="mt-1.5 text-sm leading-relaxed">
-            {insight.status === "loading" ? "Lagi mikir..." : insight.text}
-          </p>
-        </Card>
-      ) : !aiActive ? (
-        <Link
-          href="/profile"
-          className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-ink-subtle hover:text-ink"
-        >
-          <Sparkles className="size-3.5" aria-hidden />
-          Aktifin refleksi AI abis nulis journal, di Profil →
-        </Link>
-      ) : null}
 
       <div className="mt-8">
         {state.journalEntries.length === 0 ? (
