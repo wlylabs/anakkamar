@@ -3,9 +3,6 @@ export const FREE_HABIT_LIMIT = 3;
 export const PLUS_PRICE_IDR = 29_000;
 export const PLUS_PRODUCT_NAME = "Anak Kamar Plus";
 
-/** Manual-transfer fallback while Midtrans's payment channels aren't active yet. */
-export const DANA_NUMBER = "089605623197";
-
 export function formatIDR(amount: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(
     amount,

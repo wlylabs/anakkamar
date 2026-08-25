@@ -147,14 +147,6 @@ export default function ProfilePage() {
               </LinkButton>
             )}
           </div>
-          {isAdmin ? (
-            <Link
-              href="/admin/plus"
-              className="mt-3 block text-xs font-semibold text-ink-muted hover:text-ink"
-            >
-              Kelola transfer manual →
-            </Link>
-          ) : null}
           {user ? (
             <button
               type="button"

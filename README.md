@@ -64,10 +64,9 @@ Setup:
    **Payment Notification URL** ke `https://domain-lo.com/api/midtrans/webhook` di
    **Pengaturan → Konfigurasi**. Kalau pakai Production, pastiin minimal satu metode pembayaran
    (QRIS/GoPay) udah aktif di menu **Metode Pembayaran** — akun baru kadang perlu verifikasi dulu.
-3. **Admin** — set `ADMIN_EMAIL` ke email akun yang boleh approve transfer manual (harus persis
-   sama kayak email yang dipakai sign-in). Akun ini juga otomatis dianggap Plus tanpa perlu
-   bayar (`app/api/premium/status`) — nggak masuk akal nyuruh pemilik app bayar ke appnya
-   sendiri buat testing.
+3. **Admin** — set `ADMIN_EMAIL` ke email akun pemilik app (harus persis sama kayak email yang
+   dipakai sign-in). Akun ini otomatis dianggap Plus tanpa perlu bayar (`app/api/premium/status`)
+   — nggak masuk akal nyuruh pemilik app bayar ke appnya sendiri buat testing.
 4. Copy `.env.example` ke `.env.local` dan isi semua key-nya.
 
 Alur teknis (QRIS/GoPay): `/plus` (pricing + sign-in) → user masuk pakai email magic-link
@@ -79,22 +78,13 @@ detik → begitu Midtrans call `POST /api/midtrans/webhook`, webhook verifikasi 
 `purchases.status`, dan set `profiles.is_plus = true` — status itu yang dibaca balik sama
 polling di client.
 
-**Fallback transfer manual** (dipakai selagi akun Midtrans belum ada channel pembayaran
-aktif): pilih "Transfer DANA" di `/plus` → nomor DANA (`lib/premium.ts`) ditampilin, user isi
-catatan opsional dan klik "Saya sudah transfer" → bikin baris `purchases` (`method:
-"dana_manual"`, status `pending`) tanpa nyentuh Midtrans sama sekali → halaman poll status yang
-sama kayak QRIS. Admin buka **`/admin/plus`** (nggak ada di nav, akses langsung lewat URL),
-lihat daftar transfer yang nunggu, klik **Approve** setelah ngecek mutasi DANA masuk beneran —
-itu langsung nge-set `purchases.status = 'settlement'` dan `profiles.is_plus = true` lewat
-service role (RLS block user biasa dari ngubah status pembayaran sendiri).
-
 Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di
 `usePremium()` (`lib/premium-context.tsx`).
 
 ## Struktur
 
 ```
-app/            routes (App Router), termasuk /plus, /admin/plus, /auth/callback, /api/checkout, /api/midtrans/webhook
+app/            routes (App Router), termasuk /plus, /auth/callback, /api/checkout, /api/midtrans/webhook
 components/     UI primitives, nav, PWA, checkout button
 lib/            types, mock data, store (localStorage), stats, premium/Supabase/Midtrans helpers
 supabase/       schema.sql — jalanin sekali di SQL Editor
