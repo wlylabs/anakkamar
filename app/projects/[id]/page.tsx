@@ -1,14 +1,14 @@
 "use client";
 
-import { ArrowLeft, Check, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Lightbulb, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 
 import { CategoryBadge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { CATEGORY_COLOR } from "@/lib/category";
+import { CATEGORY_TIPS } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 import { PROJECT_STATUS_LABEL, type ProjectStatus } from "@/lib/types";
 import { cn, formatDateID } from "@/lib/utils";
@@ -125,6 +125,20 @@ export default function ProjectDetailPage() {
           </Card>
         </div>
       ) : null}
+
+      <div className="mt-6">
+        <p className="text-label mb-2 flex items-center gap-1.5 text-ink-subtle">
+          <Lightbulb className="size-3.5" aria-hidden />
+          Tips buat project ini
+        </p>
+        <Card className="space-y-2.5">
+          {CATEGORY_TIPS[project.category].map((tip) => (
+            <p key={tip} className="text-sm leading-relaxed text-ink-muted">
+              {tip}
+            </p>
+          ))}
+        </Card>
+      </div>
 
       <button
         type="button"
