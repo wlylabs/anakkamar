@@ -20,25 +20,32 @@ function formatElapsed(ms: number) {
  * gue ngerjain ini", not a tracked metric. Elapsed time lives in this
  * component only and resets on unmount; nothing is persisted, since it's a
  * tool for right now rather than data the app reports back later.
+ *
+ * Displayed time is always recomputed from absolute timestamps (baseMs +
+ * now - startedAt) rather than accumulated per-tick, so a slow, throttled,
+ * or irregular interval (backgrounded tab, devtools open, etc.) still shows
+ * the correct number the moment it does render — the interval only forces
+ * a re-render, it never drives the math.
  */
 export function Stopwatch({ className }: { className?: string }) {
   const [running, setRunning] = useState(false);
-  const [elapsedMs, setElapsedMs] = useState(0);
+  const [baseMs, setBaseMs] = useState(0);
+  const [, forceRender] = useState(0);
   const startedAtRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!running) return;
-    const id = window.setInterval(() => {
-      setElapsedMs((prev) => prev + (Date.now() - (startedAtRef.current ?? Date.now())));
-      startedAtRef.current = Date.now();
-    }, 250);
+    const id = window.setInterval(() => forceRender((n) => n + 1), 250);
     return () => window.clearInterval(id);
   }, [running]);
 
+  const elapsedMs = running && startedAtRef.current !== null ? baseMs + (Date.now() - startedAtRef.current) : baseMs;
+
   const toggle = () => {
     if (running) {
-      setRunning(false);
+      setBaseMs(elapsedMs);
       startedAtRef.current = null;
+      setRunning(false);
     } else {
       startedAtRef.current = Date.now();
       setRunning(true);
@@ -48,7 +55,7 @@ export function Stopwatch({ className }: { className?: string }) {
   const reset = () => {
     setRunning(false);
     startedAtRef.current = null;
-    setElapsedMs(0);
+    setBaseMs(0);
   };
 
   return (

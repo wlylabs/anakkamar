@@ -143,6 +143,19 @@
     }
   }
 
+  /* Below md, TopNav (which carries its own .pt-safe) is hidden in favor of
+     BottomNav — nothing else pads for the top notch/status bar there, so a
+     page's first element (often a "← Balik" back link) sits right under it
+     on an installed PWA. TopNav handles its own inset above md, so this is
+     scoped to avoid padding twice on a desktop standalone window. */
+  @media (display-mode: standalone), (display-mode: minimal-ui) {
+    @media (max-width: 767px) {
+      body {
+        padding-top: env(safe-area-inset-top);
+      }
+    }
+  }
+
   a,
   button,
   [role="button"],
