@@ -1,68 +1,25 @@
 import type { AchievementDef, ChallengeTemplate, FocusArea } from "./types";
 
+import { KESEHATAN_CHALLENGES } from "./challenges/kesehatan";
+import { KEUANGAN_CHALLENGES } from "./challenges/keuangan";
+import { KREATIVITAS_CHALLENGES } from "./challenges/kreativitas";
+import { MENTAL_CHALLENGES } from "./challenges/mental";
+import { PRODUKTIVITAS_CHALLENGES } from "./challenges/produktivitas";
+import { RELASI_CHALLENGES } from "./challenges/relasi";
+import { SKILL_CHALLENGES_1 } from "./challenges/skill-1";
+import { SKILL_CHALLENGES_2 } from "./challenges/skill-2";
+import { SKILL_CHALLENGES_3 } from "./challenges/skill-3";
+
 export const CHALLENGES: ChallengeTemplate[] = [
-  {
-    id: "beresin-kamar-7",
-    title: "7 Hari Beresin Kamar",
-    tagline: "Ruang berantakan, kepala berantakan.",
-    description:
-      "Setiap hari, rapikan satu sudut kamar selama minimal 10 menit. Nggak perlu langsung sempurna, yang penting kelihatan progress.",
-    durationDays: 7,
-    category: "produktivitas",
-  },
-  {
-    id: "no-doomscroll-14",
-    title: "14 Hari No Doomscrolling",
-    tagline: "Scroll seperlunya, bukan sampai lupa waktu.",
-    description:
-      "Batasi scrolling media sosial tanpa tujuan. Sadar-sadar aja tiap kali mau buka, dan catat kalau berhasil nahan.",
-    durationDays: 14,
-    category: "mental",
-  },
-  {
-    id: "belajar-skill-30",
-    title: "30 Hari Belajar Skill Baru",
-    tagline: "Dikit-dikit, lama-lama jadi bisa.",
-    description:
-      "Pilih satu skill yang lo penasaran, dan sisihkan waktu tiap hari buat belajar atau latihan — walau cuma 20 menit.",
-    durationDays: 30,
-    category: "skill",
-  },
-  {
-    id: "bangun-pagi-7",
-    title: "7 Hari Bangun Lebih Pagi",
-    tagline: "Pelan-pelan geser jam bangun lo.",
-    description:
-      "Coba bangun lebih pagi dari biasanya, walau cuma 30 menit lebih awal. Nggak usah ekstrem, konsisten aja dulu.",
-    durationDays: 7,
-    category: "kesehatan",
-  },
-  {
-    id: "bikin-sesuatu-30",
-    title: "30 Hari Bikin Sesuatu",
-    tagline: "Karya kecil tiap hari lebih baik dari rencana besar yang nggak jalan.",
-    description:
-      "Hasilkan sesuatu tiap hari — tulisan, sketsa, kode, apa aja. Nggak perlu bagus, yang penting jadi.",
-    durationDays: 30,
-    category: "kreativitas",
-  },
-  {
-    id: "hemat-14",
-    title: "14 Hari Sadar Pengeluaran",
-    tagline: "Tau uang lo pergi ke mana dulu.",
-    description: "Catat setiap pengeluaran, sekecil apa pun. Cuma dicatat dulu, belum harus dihemat.",
-    durationDays: 14,
-    category: "keuangan",
-  },
-  {
-    id: "sapa-1-orang-7",
-    title: "7 Hari Nyapa Satu Orang",
-    tagline: "Relasi juga butuh dirawat kecil-kecil.",
-    description:
-      "Setiap hari, hubungi atau ngobrol beneran sama satu orang yang udah lama nggak lo sapa.",
-    durationDays: 7,
-    category: "relasi",
-  },
+  ...PRODUKTIVITAS_CHALLENGES,
+  ...MENTAL_CHALLENGES,
+  ...KESEHATAN_CHALLENGES,
+  ...KREATIVITAS_CHALLENGES,
+  ...KEUANGAN_CHALLENGES,
+  ...RELASI_CHALLENGES,
+  ...SKILL_CHALLENGES_1,
+  ...SKILL_CHALLENGES_2,
+  ...SKILL_CHALLENGES_3,
 ];
 
 export const HABIT_IDEAS = [
@@ -195,18 +152,6 @@ export const EXPLORE_ACTIVITIES = [
     title: "Duduk diam 5 menit tanpa HP.",
     hint: "Boring itu oke. Nggak semua waktu harus produktif.",
   },
-];
-
-export const SKILL_IDEAS = [
-  "Desain grafis dasar",
-  "Public speaking",
-  "Fotografi HP",
-  "Excel / spreadsheet",
-  "Menulis kreatif",
-  "Dasar coding",
-  "Videografi & editing",
-  "Bahasa asing dasar",
-  "Memasak menu simpel",
 ];
 
 export const CATEGORY_TIPS: Record<FocusArea, string[]> = {

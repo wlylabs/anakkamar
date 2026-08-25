@@ -5,12 +5,18 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY ?? "";
 const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.1-8b-instant";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
 
-export const aiConfigured = Boolean(GROQ_API_KEY || GEMINI_API_KEY);
+/** True if the deployer set a shared server-side key, used when a request brings none of its own. */
+export const hasServerDefaultKey = Boolean(GROQ_API_KEY || GEMINI_API_KEY);
 
-async function callGroq(systemPrompt: string, userPrompt: string) {
+interface RequestKeys {
+  groq?: string;
+  gemini?: string;
+}
+
+async function callGroq(apiKey: string, systemPrompt: string, userPrompt: string) {
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_API_KEY}` },
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [
@@ -28,8 +34,8 @@ async function callGroq(systemPrompt: string, userPrompt: string) {
   return text as string;
 }
 
-async function callGemini(systemPrompt: string, userPrompt: string) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
+async function callGemini(apiKey: string, systemPrompt: string, userPrompt: string) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -47,21 +53,27 @@ async function callGemini(systemPrompt: string, userPrompt: string) {
 }
 
 /**
- * Groq first — generous free tier and low latency, good fit for an
- * inline/real-time feature. Falls back to Gemini when Groq isn't
- * configured or errors out (rate limit, outage), so one provider hiccup
- * doesn't take the feature down.
+ * BYOK: each user pastes their own Groq/Gemini key in Profile, sent along
+ * with the request and never stored server-side. `keys` (per-request) wins
+ * over the deployer's own GROQ_API_KEY/GEMINI_API_KEY env vars, which only
+ * serve as a fallback default. Groq is tried first — generous free tier and
+ * low latency, a good fit for an inline feature — falling back to Gemini
+ * when Groq's key is missing or the call errors (rate limit, outage), so
+ * one provider hiccup doesn't take the feature down.
  */
-export async function generateText(systemPrompt: string, userPrompt: string) {
-  if (GROQ_API_KEY) {
+export async function generateText(systemPrompt: string, userPrompt: string, keys: RequestKeys = {}) {
+  const groqKey = keys.groq || GROQ_API_KEY;
+  const geminiKey = keys.gemini || GEMINI_API_KEY;
+
+  if (groqKey) {
     try {
-      return await callGroq(systemPrompt, userPrompt);
+      return await callGroq(groqKey, systemPrompt, userPrompt);
     } catch (err) {
       console.error("[ai] Groq failed, falling back to Gemini:", err instanceof Error ? err.message : err);
     }
   }
-  if (GEMINI_API_KEY) {
-    return await callGemini(systemPrompt, userPrompt);
+  if (geminiKey) {
+    return await callGemini(geminiKey, systemPrompt, userPrompt);
   }
   throw new Error("Nggak ada AI provider yang dikonfigurasi.");
 }

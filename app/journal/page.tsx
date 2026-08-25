@@ -1,6 +1,7 @@
 "use client";
 
 import { BookHeart, Lock, Shuffle, Sparkles, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { JournalIllustration } from "@/components/illustrations";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Textarea } from "@/components/ui/field";
+import { useAiKeys } from "@/lib/ai-keys";
 import { JOURNAL_PROMPTS } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 import { formatDateID } from "@/lib/utils";
@@ -23,13 +25,16 @@ type Insight = { status: "loading" } | { status: "done"; text: string };
 
 export default function JournalPage() {
   const { state, hydrated, addJournalEntry, deleteJournalEntry } = useApp();
+  const { keys: aiKeys, hydrated: aiKeysHydrated } = useAiKeys();
   const [promptIndex, setPromptIndex] = useState(() => dayOfYear() % JOURNAL_PROMPTS.length);
   const [content, setContent] = useState("");
   const [insight, setInsight] = useState<Insight | null>(null);
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
-  if (!hydrated) return null;
+  if (!hydrated || !aiKeysHydrated) return null;
+
+  const aiActive = Boolean(aiKeys.groq || aiKeys.gemini);
 
   const fetchInsight = async (promptText: string, contentText: string) => {
     setInsight({ status: "loading" });
@@ -37,11 +42,16 @@ export default function JournalPage() {
       const res = await fetch("/api/journal/insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: promptText, content: contentText }),
+        body: JSON.stringify({
+          prompt: promptText,
+          content: contentText,
+          groqApiKey: aiKeys.groq,
+          geminiApiKey: aiKeys.gemini,
+        }),
       });
       const data = (await res.json().catch(() => ({}))) as { insight?: string };
       // Best-effort — the entry's already saved locally, so a missing/failed
-      // insight (unconfigured, rate-limited, offline) just skips the card.
+      // insight (bad key, rate-limited, offline) just skips the card.
       setInsight(res.ok && data.insight ? { status: "done", text: data.insight } : null);
     } catch {
       setInsight(null);
@@ -55,7 +65,7 @@ export default function JournalPage() {
     addJournalEntry(prompt, submittedContent);
     setContent("");
     setPromptIndex((dayOfYear() + 1) % JOURNAL_PROMPTS.length);
-    void fetchInsight(prompt, submittedContent);
+    if (aiActive) void fetchInsight(prompt, submittedContent);
   };
 
   return (
@@ -104,6 +114,14 @@ export default function JournalPage() {
             {insight.status === "loading" ? "Lagi mikir..." : insight.text}
           </p>
         </Card>
+      ) : !aiActive ? (
+        <Link
+          href="/profile"
+          className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-ink-subtle hover:text-ink"
+        >
+          <Sparkles className="size-3.5" aria-hidden />
+          Aktifin refleksi AI abis nulis journal, di Profil →
+        </Link>
       ) : null}
 
       <div className="mt-8">

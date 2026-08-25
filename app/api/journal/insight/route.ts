@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { aiConfigured, generateText } from "@/lib/ai";
+import { generateText, hasServerDefaultKey } from "@/lib/ai";
 
 const CONTENT_MAX_LENGTH = 2000;
+const KEY_MAX_LENGTH = 200;
 
 const SYSTEM_PROMPT =
   "Lo adalah teman refleksi yang hangat dan suportif di Anak Kamar, app self-development buat anak " +
@@ -11,12 +12,25 @@ const SYSTEM_PROMPT =
   "validasi perasaan mereka dan kasih satu insight atau pertanyaan reflektif ringan. Jangan menggurui, " +
   "jangan kasih saran generik kayak 'tetap semangat ya'.";
 
+function readKey(value: unknown) {
+  return typeof value === "string" && value.trim() ? value.trim().slice(0, KEY_MAX_LENGTH) : undefined;
+}
+
 export async function POST(request: Request) {
-  if (!aiConfigured) {
-    return NextResponse.json({ error: "AI belum dikonfigurasi." }, { status: 503 });
+  const body = await request.json().catch(() => ({}));
+
+  // BYOK: each user's own key rides along with the request (from their
+  // browser's localStorage, set in Profile) — never persisted here.
+  const groq = readKey(body.groqApiKey);
+  const gemini = readKey(body.geminiApiKey);
+
+  if (!groq && !gemini && !hasServerDefaultKey) {
+    return NextResponse.json(
+      { error: "AI belum diaktifin. Masukin API key Groq/Gemini lo di halaman Profil." },
+      { status: 503 },
+    );
   }
 
-  const body = await request.json().catch(() => ({}));
   const prompt = typeof body.prompt === "string" ? body.prompt.trim().slice(0, CONTENT_MAX_LENGTH) : "";
   const content = typeof body.content === "string" ? body.content.trim().slice(0, CONTENT_MAX_LENGTH) : "";
   if (!content) {
@@ -24,11 +38,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const insight = await generateText(SYSTEM_PROMPT, `Prompt hari ini: "${prompt}"\n\nTulisan user:\n${content}`);
+    const insight = await generateText(SYSTEM_PROMPT, `Prompt hari ini: "${prompt}"\n\nTulisan user:\n${content}`, {
+      groq,
+      gemini,
+    });
     return NextResponse.json({ insight });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[journal/insight] failed:", message);
-    return NextResponse.json({ error: "Gagal bikin insight." }, { status: 502 });
+    return NextResponse.json({ error: "Gagal bikin insight. Cek lagi API key lo di Profil." }, { status: 502 });
   }
 }

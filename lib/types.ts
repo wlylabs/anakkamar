@@ -49,6 +49,16 @@ export interface Project {
   createdAt: string;
 }
 
+export interface ChallengeDay {
+  /** 1-indexed, matches position in the day grid. */
+  day: number;
+  title: string;
+  /** The actual material for the day — grounded in a named, real framework/source, not filler. */
+  lesson: string;
+  /** Today's concrete micro-practice, small enough to finish in one sitting. */
+  action: string;
+}
+
 export interface ChallengeTemplate {
   id: string;
   title: string;
@@ -56,6 +66,12 @@ export interface ChallengeTemplate {
   durationDays: number;
   category: FocusArea;
   tagline: string;
+  /** One-line note on what framework/research this challenge's curriculum draws from. */
+  basis: string;
+  /** Shown once, up front, for challenges touching mental health/wellbeing. */
+  disclaimer?: string;
+  /** Length must equal durationDays. */
+  days: ChallengeDay[];
 }
 
 export interface JoinedChallenge {

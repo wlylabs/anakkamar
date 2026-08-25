@@ -19,8 +19,8 @@ maju sedikit.
 - **Challenge** — tantangan singkat (7/14/30 hari) yang bisa diikuti dan ditandai tiap hari.
 - **Habit tracker** — kebiasaan kecil dengan visualisasi streak 14 hari.
 - **Journal** — refleksi harian, private, dengan prompt yang berganti tiap hari, dan (opsional)
-  respons refleksi singkat dari AI setelah nulis. Lihat [Journal AI](#journal-ai-opsional) di
-  bawah buat setup-nya.
+  respons refleksi singkat dari AI setelah nulis, pakai API key Groq/Gemini punya lo sendiri.
+  Lihat [Journal AI](#journal-ai-opsional-byok) di bawah buat setup-nya.
 - **Progress** — statistik dan visualisasi progress mingguan/bulanan.
 - **Explore** — ide project, challenge populer, habit ideas, skill, dan prompt journal.
 - **Profile** — bio, statistik, daftar project, dan achievement.
@@ -90,13 +90,20 @@ service role (RLS block user biasa dari ngubah status pembayaran sendiri).
 Batas gratis (`FREE_PROJECT_LIMIT`, `FREE_HABIT_LIMIT` di `lib/premium.ts`) dicek di
 `usePremium()` (`lib/premium-context.tsx`).
 
-## Journal AI (opsional)
+## Journal AI (opsional, BYOK)
 
 Setelah nulis journal entry, `/api/journal/insight` (`lib/ai.ts`) bisa balikin respons refleksi
-singkat 2-3 kalimat. Groq dicoba duluan (`GROQ_API_KEY` — console.groq.com, free tier gede,
-latency rendah), Gemini jadi fallback (`GEMINI_API_KEY` — aistudio.google.com) kalau Groq belum
-diisi atau errornya (limit, down). Kosongin dua-duanya buat nonaktifin fitur ini — entry tetap
-kesimpen normal di `localStorage`, cuma kartu refleksinya nggak muncul.
+singkat 2-3 kalimat. Ini **bring-your-own-key**: tiap user masukin API key Groq/Gemini-nya
+sendiri (gratis) di **Profil → Refleksi AI di Journal** (`components/ai-settings.tsx`), lengkap
+sama tutorial cara bikin key-nya. Key kesimpen di `localStorage` device itu doang
+(`lib/ai-keys.ts`) — dikirim ke server cuma pas request buat diteruskan ke Groq/Gemini, nggak
+pernah kami simpan, dan sengaja dipisah dari `AppState` biar nggak ikut kebawa pas ekspor backup
+data. Groq dicoba duluan (free tier gede, latency rendah), Gemini jadi fallback kalau Groq
+errornya (limit, down) atau user cuma isi Gemini. Nggak masukin key = fitur ini nggak muncul,
+sisa app tetap jalan normal.
+
+Buat deployer: `GROQ_API_KEY` / `GEMINI_API_KEY` di env bersifat opsional juga — cuma jadi
+default bersama buat user yang belum masukin key sendiri, dipakai kalau request nggak bawa key.
 
 ## Struktur
 
