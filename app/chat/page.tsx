@@ -3,6 +3,7 @@
 import { MessageCircle, Send, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -70,46 +71,46 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-12rem)] max-w-2xl flex-col px-5 pt-8 md:px-8">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-display flex items-center gap-2.5 text-3xl">
-            <MessageCircle className="size-7 text-accent" aria-hidden />
-            Ngobrol
-          </h1>
-          <p className="mt-1 text-ink-muted">Teman ngobrol AI buat mikirin langkah kecil lo.</p>
+    <>
+      <div className="mx-auto max-w-2xl px-5 pt-8 md:px-8">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-display flex items-center gap-2.5 text-3xl">
+              <MessageCircle className="size-7 text-accent" aria-hidden />
+              Ngobrol
+            </h1>
+            <p className="mt-1 text-ink-muted">Teman ngobrol AI buat mikirin langkah kecil lo.</p>
+          </div>
+          {messages.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Hapus semua riwayat obrolan ini? Nggak bisa dibalikin.")) clear();
+              }}
+              className="press mt-1 flex size-9 shrink-0 items-center justify-center rounded-[var(--radius)] border-2 border-line-soft text-ink-subtle hover:text-critical"
+              aria-label="Hapus riwayat obrolan"
+            >
+              <Trash2 className="size-4" aria-hidden />
+            </button>
+          ) : null}
         </div>
-        {messages.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              if (window.confirm("Hapus semua riwayat obrolan ini? Nggak bisa dibalikin.")) clear();
-            }}
-            className="press mt-1 flex size-9 shrink-0 items-center justify-center rounded-[var(--radius)] border-2 border-line-soft text-ink-subtle hover:text-critical"
-            aria-label="Hapus riwayat obrolan"
-          >
-            <Trash2 className="size-4" aria-hidden />
-          </button>
-        ) : null}
-      </div>
 
-      {!aiActive ? (
-        <div className="mt-6 flex flex-1 flex-col items-center justify-center">
-          <EmptyState
-            icon={<MessageCircle className="size-10" aria-hidden />}
-            title="Belum ada AI aktif"
-            description="Masukin API key Groq/Gemini lo sendiri (gratis) di Profil buat mulai ngobrol."
-            action={
-              <Link href="/profile" className="press inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
-                <Sparkles className="size-3.5" aria-hidden />
-                Aktifin di Profil
-              </Link>
-            }
-          />
-        </div>
-      ) : (
-        <>
-          <div className="mt-4 flex-1 pb-3">
+        {!aiActive ? (
+          <div className="mt-6 flex flex-col items-center justify-center">
+            <EmptyState
+              icon={<MessageCircle className="size-10" aria-hidden />}
+              title="Belum ada AI aktif"
+              description="Masukin API key Groq/Gemini lo sendiri (gratis) di Profil buat mulai ngobrol."
+              action={
+                <Link href="/profile" className="press inline-flex items-center gap-1.5 text-sm font-semibold text-accent">
+                  <Sparkles className="size-3.5" aria-hidden />
+                  Aktifin di Profil
+                </Link>
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-4 pb-28">
             {messages.length === 0 ? (
               <div className="flex flex-col gap-4 py-6">
                 <p className="text-sm leading-relaxed text-ink-muted">
@@ -145,30 +146,44 @@ export default function ChatPage() {
             )}
             <div ref={bottomRef} />
           </div>
+        )}
+      </div>
 
-          {error ? <p className="mb-2 text-sm font-medium text-critical">{error}</p> : null}
-
-          <form onSubmit={handleSubmit} className="mt-2 flex items-end gap-2 pb-2">
-            <Textarea
-              rows={1}
-              placeholder="Tulis pesan..."
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void send(draft);
-                }
-              }}
-              className="max-h-32 min-h-12 resize-none py-3"
-            />
-            <Button type="submit" variant="accent" size="icon" disabled={!draft.trim() || sending} aria-label="Kirim">
-              <Send className="size-4" aria-hidden />
-            </Button>
-          </form>
-        </>
-      )}
-    </div>
+      {aiActive
+        ? createPortal(
+            <div className="fixed inset-x-0 bottom-[calc(58px_+_env(safe-area-inset-bottom))] z-20 border-t-2 border-line bg-canvas md:bottom-0">
+              <div className="mx-auto max-w-2xl px-5 py-3 md:px-8">
+                {error ? <p className="mb-2 text-sm font-medium text-critical">{error}</p> : null}
+                <form onSubmit={handleSubmit} className="flex items-end gap-2">
+                  <Textarea
+                    rows={1}
+                    placeholder="Tulis pesan..."
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void send(draft);
+                      }
+                    }}
+                    className="max-h-32 min-h-12 resize-none py-3"
+                  />
+                  <Button
+                    type="submit"
+                    variant="accent"
+                    size="icon"
+                    disabled={!draft.trim() || sending}
+                    aria-label="Kirim"
+                  >
+                    <Send className="size-4" aria-hidden />
+                  </Button>
+                </form>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }
 
