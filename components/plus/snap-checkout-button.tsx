@@ -53,8 +53,9 @@ export function SnapCheckoutButton() {
         onError: () => setError("Pembayaran gagal. Coba lagi."),
         onClose: () => setStatus("idle"),
       });
-    } catch {
-      setError("Gagal konek ke server.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(`Gagal konek ke server: ${message}`);
       setStatus("idle");
     }
   };
