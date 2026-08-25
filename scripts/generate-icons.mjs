@@ -1,7 +1,7 @@
 /**
  * Generates the raster icons the SVG conventions can't cover: the iOS
  * home-screen icon (needs PNG) and favicon.ico (fetched directly by
- * scrapers that never look at <link rel="icon">). Same three-rectangle
+ * scrapers that never look at <link rel="icon">). Same sprout-in-a-room
  * mark as components/logo.tsx and app/icon.svg, rasterised from signed
  * distance fields so no image toolchain is needed.
  *
@@ -17,7 +17,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const APP_DIR = join(ROOT, "app");
 
 const BACKGROUND = [0x20, 0x1a, 0x12];
-const GLYPH = [0xf6, 0xf0, 0xe2];
+const STEM = [0xf6, 0xf0, 0xe2];
+const LEAF_LEFT = [0x3f, 0x7d, 0x55];
+const LEAF_RIGHT = [0xff, 0x5a, 0x36];
+const BUD = [0xb5, 0x82, 0x0a];
 
 function sdRoundedRect(px, py, cx, cy, halfW, halfH, r) {
   const qx = Math.abs(px - cx) - halfW + r;
@@ -26,13 +29,26 @@ function sdRoundedRect(px, py, cx, cy, halfW, halfH, r) {
   return Math.min(Math.max(qx, qy), 0) + outside - r;
 }
 
-/** Matches the 32-unit rects in components/logo.tsx. */
-function sdGlyph(x, y) {
-  const left = sdRoundedRect(x, y, 12, 16, 3, 7, 1);
-  const topRight = sdRoundedRect(x, y, 20.5, 11.5, 2.5, 2.5, 1);
-  const bottomRight = sdRoundedRect(x, y, 20.5, 20, 2.5, 3, 1);
-  return Math.min(left, topRight, bottomRight);
+function sdRoundedRectRotated(px, py, cx, cy, halfW, halfH, r, angleDeg) {
+  const rad = (-angleDeg * Math.PI) / 180;
+  const dx = px - cx;
+  const dy = py - cy;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  return sdRoundedRect(dx * cos - dy * sin, dx * sin + dy * cos, 0, 0, halfW, halfH, r);
 }
+
+function sdCircle(px, py, cx, cy, r) {
+  return Math.hypot(px - cx, py - cy) - r;
+}
+
+/** Matches the 32-unit shapes in components/logo.tsx. */
+const GLYPH_SHAPES = [
+  { sdf: (x, y) => sdRoundedRect(x, y, 16, 21, 1, 4, 1), color: STEM },
+  { sdf: (x, y) => sdRoundedRectRotated(x, y, 12.5, 16, 5, 3, 3, -35), color: LEAF_LEFT },
+  { sdf: (x, y) => sdRoundedRectRotated(x, y, 19.5, 16, 5, 3, 3, 35), color: LEAF_RIGHT },
+  { sdf: (x, y) => sdCircle(x, y, 16, 9.5, 3), color: BUD },
+];
 
 function coverage(distance) {
   return Math.min(Math.max(0.5 - distance, 0), 1);
@@ -54,12 +70,24 @@ function render(size, { cornerRadius, glyphScale }) {
       const px = x + 0.5;
       const py = y + 0.5;
       const backdrop = coverage(sdRoundedRect(px, py, half, half, half, half, radiusPx));
-      const glyph = coverage(sdGlyph((px - origin) / unit, (py - origin) / unit) * unit);
+      const lx = (px - origin) / unit;
+      const ly = (py - origin) / unit;
+
+      let r = BACKGROUND[0];
+      let g = BACKGROUND[1];
+      let b = BACKGROUND[2];
+      for (const shape of GLYPH_SHAPES) {
+        const cov = coverage(shape.sdf(lx, ly) * unit);
+        if (cov <= 0) continue;
+        r = overlay(r, shape.color[0], cov);
+        g = overlay(g, shape.color[1], cov);
+        b = overlay(b, shape.color[2], cov);
+      }
+
       const offset = (y * size + x) * 4;
-      const ink = Math.min(glyph, backdrop);
-      pixels[offset] = overlay(BACKGROUND[0], GLYPH[0], ink);
-      pixels[offset + 1] = overlay(BACKGROUND[1], GLYPH[1], ink);
-      pixels[offset + 2] = overlay(BACKGROUND[2], GLYPH[2], ink);
+      pixels[offset] = r;
+      pixels[offset + 1] = g;
+      pixels[offset + 2] = b;
       pixels[offset + 3] = Math.round(backdrop * 255);
     }
   }
