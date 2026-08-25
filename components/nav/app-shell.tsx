@@ -31,7 +31,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       {showNav ? <TopNav /> : null}
       <main id="main" className={showNav ? "pb-24 md:pb-12" : ""}>
-        {children}
+        <div key={pathname} className="animate-page-in">
+          {children}
+        </div>
       </main>
       {showNav ? <BottomNav /> : null}
       {showNav ? <InstallBanner /> : null}

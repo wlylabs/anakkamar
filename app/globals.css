@@ -203,6 +203,29 @@
     transition-duration: 0s;
   }
 
+  /* Guarded by (hover: hover) so a tap on touch doesn't leave a stuck
+     "lifted" card behind — only pointers that can actually hover get this. */
+  @media (hover: hover) {
+    .press.shadow-pop:hover:not(:active),
+    .press.shadow-pop-sm:hover:not(:active),
+    a.paper:hover:not(:active),
+    button.paper:hover:not(:active) {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-pop-lg);
+    }
+  }
+
+  .hover-lift {
+    transition: transform 180ms cubic-bezier(0.33, 1, 0.68, 1), box-shadow 180ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  @media (hover: hover) {
+    .hover-lift:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-pop-lg);
+    }
+  }
+
   .paper {
     background-color: var(--surface);
     border: 2px solid var(--line);
@@ -257,5 +280,91 @@
 
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .animate-page-in {
+    animation: page-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .animate-pop {
+    animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(0.5);
+    }
+    70% {
+      transform: scale(1.15);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-float {
+    animation: float 5s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 5s ease-in-out 1.2s infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0) rotate(var(--float-rotate, 0deg));
+    }
+    50% {
+      transform: translateY(-10px) rotate(var(--float-rotate, 0deg));
+    }
+  }
+
+  .marquee-track {
+    animation: marquee 26s linear infinite;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-delayed,
+    .marquee-track {
+      animation: none;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
   }
 }

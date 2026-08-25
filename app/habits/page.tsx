@@ -153,7 +153,7 @@ export default function HabitsPage() {
                         aria-pressed={done}
                         aria-label={date}
                       >
-                        {done ? <Check className="size-3" aria-hidden /> : null}
+                        {done ? <Check className="size-3 animate-pop" aria-hidden /> : null}
                       </button>
                     );
                   })}

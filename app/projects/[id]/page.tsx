@@ -115,7 +115,7 @@ export default function ProjectDetailPage() {
                     m.done ? "bg-positive text-accent-ink" : "bg-surface",
                   )}
                 >
-                  {m.done ? <Check className="size-3.5" aria-hidden /> : null}
+                  {m.done ? <Check className="size-3.5 animate-pop" aria-hidden /> : null}
                 </span>
                 <span className={cn("text-sm font-medium", m.done && "text-ink-subtle line-through")}>
                   {m.title}
