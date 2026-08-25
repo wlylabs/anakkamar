@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, BookHeart, Check, Compass, Flame, ListChecks, Plus, Sprout } from "lucide-react";
+import { ArrowRight, Check, Compass, Flame, ListChecks, NotebookPen, Plus, Sprout } from "lucide-react";
 import Link from "next/link";
 
 import { CategoryBadge } from "@/components/ui/badge";
@@ -199,7 +199,7 @@ export default function HomePage() {
         <Card>
           <div className="flex items-center justify-between">
             <p className="text-label flex items-center gap-1.5 text-ink-subtle">
-              <BookHeart className="size-3.5" aria-hidden /> Recent journal
+              <NotebookPen className="size-3.5" aria-hidden /> Recent journal
             </p>
             <Link href="/journal" className="text-xs font-semibold text-ink-muted hover:text-ink">
               Tulis

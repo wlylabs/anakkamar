@@ -1,6 +1,6 @@
 "use client";
 
-import { BookHeart, Lock, Shuffle, Trash2 } from "lucide-react";
+import { Lock, NotebookPen, Shuffle, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { JournalIllustration } from "@/components/illustrations";
@@ -45,7 +45,7 @@ export default function JournalPage() {
   return (
     <div className="mx-auto max-w-2xl px-5 pt-8 md:px-8">
       <h1 className="text-display flex items-center gap-2.5 text-3xl">
-        <BookHeart className="size-7 text-accent" aria-hidden />
+        <NotebookPen className="size-7 text-accent" aria-hidden />
         Journal
       </h1>
       <p className="mt-1 flex items-center gap-1.5 text-ink-muted">

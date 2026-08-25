@@ -1,9 +1,10 @@
 /**
  * Generates the raster icons the SVG conventions can't cover: the iOS
  * home-screen icon (needs PNG) and favicon.ico (fetched directly by
- * scrapers that never look at <link rel="icon">). Same three-rectangle
- * mark as components/logo.tsx and app/icon.svg, rasterised from signed
- * distance fields so no image toolchain is needed.
+ * scrapers that never look at <link rel="icon">). Same "AK" stamp mark
+ * as components/logo.tsx and app/icon.svg — an ink square with an accent
+ * card peeking out behind it — rasterised from signed distance fields so
+ * no image toolchain is needed.
  *
  *   node scripts/generate-icons.mjs
  */
@@ -16,8 +17,9 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const APP_DIR = join(ROOT, "app");
 
-const BACKGROUND = [0x20, 0x1a, 0x12];
-const GLYPH = [0xf6, 0xf0, 0xe2];
+const INK = [0x20, 0x1a, 0x12];
+const ACCENT = [0xff, 0x5a, 0x36];
+const CANVAS = [0xf6, 0xf0, 0xe2];
 
 function sdRoundedRect(px, py, cx, cy, halfW, halfH, r) {
   const qx = Math.abs(px - cx) - halfW + r;
@@ -27,12 +29,13 @@ function sdRoundedRect(px, py, cx, cy, halfW, halfH, r) {
 }
 
 /** Matches the 32-unit rects in components/logo.tsx. */
-function sdGlyph(x, y) {
-  const left = sdRoundedRect(x, y, 12, 16, 3, 7, 1);
-  const topRight = sdRoundedRect(x, y, 20.5, 11.5, 2.5, 2.5, 1);
-  const bottomRight = sdRoundedRect(x, y, 20.5, 20, 2.5, 3, 1);
-  return Math.min(left, topRight, bottomRight);
-}
+const GLYPH_SHAPES = [
+  { sdf: (x, y) => sdRoundedRect(x, y, 18, 18, 12, 12, 5), color: ACCENT },
+  { sdf: (x, y) => sdRoundedRect(x, y, 14, 14, 12, 12, 5), color: INK },
+  { sdf: (x, y) => sdRoundedRect(x, y, 11, 15, 3, 7, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 19.5, 10.5, 2.5, 2.5, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 19.5, 19, 2.5, 3, 1), color: CANVAS },
+];
 
 function coverage(distance) {
   return Math.min(Math.max(0.5 - distance, 0), 1);
@@ -54,12 +57,24 @@ function render(size, { cornerRadius, glyphScale }) {
       const px = x + 0.5;
       const py = y + 0.5;
       const backdrop = coverage(sdRoundedRect(px, py, half, half, half, half, radiusPx));
-      const glyph = coverage(sdGlyph((px - origin) / unit, (py - origin) / unit) * unit);
+      const lx = (px - origin) / unit;
+      const ly = (py - origin) / unit;
+
+      let r = INK[0];
+      let g = INK[1];
+      let b = INK[2];
+      for (const shape of GLYPH_SHAPES) {
+        const cov = coverage(shape.sdf(lx, ly) * unit);
+        if (cov <= 0) continue;
+        r = overlay(r, shape.color[0], cov);
+        g = overlay(g, shape.color[1], cov);
+        b = overlay(b, shape.color[2], cov);
+      }
+
       const offset = (y * size + x) * 4;
-      const ink = Math.min(glyph, backdrop);
-      pixels[offset] = overlay(BACKGROUND[0], GLYPH[0], ink);
-      pixels[offset + 1] = overlay(BACKGROUND[1], GLYPH[1], ink);
-      pixels[offset + 2] = overlay(BACKGROUND[2], GLYPH[2], ink);
+      pixels[offset] = r;
+      pixels[offset + 1] = g;
+      pixels[offset + 2] = b;
       pixels[offset + 3] = Math.round(backdrop * 255);
     }
   }

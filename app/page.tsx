@@ -1,4 +1,4 @@
-import { ArrowRight, BookHeart, Flame, ListChecks, Sparkles, Sprout } from "lucide-react";
+import { ArrowRight, Flame, ListChecks, NotebookPen, Sparkles, Sprout } from "lucide-react";
 
 import { Reveal } from "@/components/reveal";
 import { LinkButton } from "@/components/ui/button";
@@ -21,7 +21,7 @@ const PILLARS = [
     desc: "Bangun kebiasaan kecil tiap hari. Streak-nya kelihatan, tanpa harus sempurna.",
   },
   {
-    icon: BookHeart,
+    icon: NotebookPen,
     title: "Journal",
     desc: "Ruang privat buat mikir ulang hari lo — apa yang jalan, apa yang belum.",
   },
