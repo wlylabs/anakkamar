@@ -44,7 +44,7 @@ export default function LandingPage() {
           <Logo className="size-7" />
           <span>Sejengkal</span>
         </div>
-        <LinkButton href="/onboarding" variant="secondary" size="sm" className="hidden sm:inline-flex">
+        <LinkButton href="/plus" variant="secondary" size="sm" className="hidden sm:inline-flex">
           Masuk
         </LinkButton>
       </header>
@@ -105,6 +105,9 @@ export default function LandingPage() {
             <LinkButton href="/onboarding" variant="accent" size="lg" className="group w-full sm:w-auto">
               Mulai Project Gue
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
+            </LinkButton>
+            <LinkButton href="/plus" variant="secondary" size="lg" className="w-full sm:w-auto">
+              Masuk
             </LinkButton>
           </div>
           <p className="animate-in-up mt-4 text-sm text-ink-subtle">
