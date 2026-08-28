@@ -1,7 +1,7 @@
 /**
  * Generates the raster icons the SVG conventions can't cover: the iOS
  * home-screen icon (needs PNG) and favicon.ico (fetched directly by
- * scrapers that never look at <link rel="icon">). Same "AK" stamp mark
+ * scrapers that never look at <link rel="icon">). Same "S" stamp mark
  * as components/logo.tsx and app/icon.svg — an ink square with an accent
  * card peeking out behind it — rasterised from signed distance fields so
  * no image toolchain is needed.
@@ -32,9 +32,12 @@ function sdRoundedRect(px, py, cx, cy, halfW, halfH, r) {
 const GLYPH_SHAPES = [
   { sdf: (x, y) => sdRoundedRect(x, y, 18, 18, 12, 12, 5), color: ACCENT },
   { sdf: (x, y) => sdRoundedRect(x, y, 14, 14, 12, 12, 5), color: INK },
-  { sdf: (x, y) => sdRoundedRect(x, y, 11, 15, 3, 7, 1), color: CANVAS },
-  { sdf: (x, y) => sdRoundedRect(x, y, 19.5, 10.5, 2.5, 2.5, 1), color: CANVAS },
-  { sdf: (x, y) => sdRoundedRect(x, y, 19.5, 19, 2.5, 3, 1), color: CANVAS },
+  // The five bars of the "S", as centre + half-extents of the logo.tsx rects.
+  { sdf: (x, y) => sdRoundedRect(x, y, 14.5, 8.1, 7.5, 1.6, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 8.6, 11.3, 1.6, 4.8, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 14.5, 14.5, 7.5, 1.6, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 20.4, 17.7, 1.6, 4.8, 1), color: CANVAS },
+  { sdf: (x, y) => sdRoundedRect(x, y, 14.5, 20.9, 7.5, 1.6, 1), color: CANVAS },
 ];
 
 function coverage(distance) {
