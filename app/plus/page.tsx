@@ -14,7 +14,7 @@ const BENEFITS = [
   "Project & habit unlimited (gratis dibatasi 3)",
   "Tema warna tambahan",
   "Statistik lanjutan & riwayat streak",
-  "Dukung Anak Kamar terus berkembang",
+  "Dukung Sejengkal terus berkembang",
 ];
 
 function SignInForm() {
@@ -72,7 +72,7 @@ export default function PlusPage() {
     <div className="mx-auto max-w-xl px-5 pb-16 pt-8 md:px-8">
       <h1 className="text-display flex items-center gap-2.5 text-3xl">
         <Sparkles className="size-7 text-accent" aria-hidden />
-        Anak Kamar Plus
+        Sejengkal Plus
       </h1>
       <p className="mt-1 text-ink-muted">Sekali bayar, lunas selamanya. Nggak ada langganan.</p>
 
@@ -96,7 +96,7 @@ export default function PlusPage() {
             </p>
           ) : loading ? null : isPlus ? (
             <p className="rounded-[var(--radius)] border-2 border-line bg-positive-soft px-4 py-3 text-sm font-semibold text-positive">
-              Lo udah punya Anak Kamar Plus. Makasih udah dukung!
+              Lo udah punya Sejengkal Plus. Makasih udah dukung!
             </p>
           ) : user ? (
             <CustomCheckout />

@@ -9,7 +9,9 @@ interface BeforeInstallPromptEvent extends Event {
 
 type Platform = "prompt" | "manual" | "installed" | "unavailable";
 
-const DISMISS_KEY = "anak-kamar:install-dismissed";
+const DISMISS_KEY = "sejengkal:install-dismissed";
+/** Key used before the rename to Sejengkal, so an earlier dismissal still counts. */
+const LEGACY_DISMISS_KEY = "anak-kamar:install-dismissed";
 
 export function useInstall() {
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
@@ -17,7 +19,10 @@ export function useInstall() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
+    setDismissed(
+      window.localStorage.getItem(DISMISS_KEY) === "1" ||
+        window.localStorage.getItem(LEGACY_DISMISS_KEY) === "1",
+    );
 
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||

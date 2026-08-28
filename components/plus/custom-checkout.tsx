@@ -141,7 +141,7 @@ export function CustomCheckout() {
           <CheckCircle2 className="size-7 animate-pop" aria-hidden />
         </div>
         <p className="text-lg font-bold">Pembayaran berhasil!</p>
-        <p className="text-sm text-ink-muted">Anak Kamar Plus lo udah aktif. Makasih udah dukung.</p>
+        <p className="text-sm text-ink-muted">Sejengkal Plus lo udah aktif. Makasih udah dukung.</p>
       </div>
     );
   }

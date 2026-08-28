@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Project Anak Kamar",
-    short_name: "Anak Kamar",
-    description: "Mulainya dari kamar. Ruang kecil untuk mulai berkembang.",
+    name: "Project Sejengkal",
+    short_name: "Sejengkal",
+    description: "Cukup maju sedikit. Langkah kecil untuk mulai berkembang.",
     start_url: "/home",
     display: "standalone",
     orientation: "portrait",

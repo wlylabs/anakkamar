@@ -15,7 +15,7 @@ export function TopNav() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/home" className="flex items-center gap-2.5 font-bold tracking-tight">
           <Logo className="size-7" />
-          <span>Anak Kamar</span>
+          <span>Sejengkal</span>
         </Link>
         <nav className="flex items-center gap-1">
           {NAV_ITEMS.map((item) => {

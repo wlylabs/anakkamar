@@ -11,25 +11,25 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Project Anak Kamar — Mulainya dari kamar.",
-    template: "%s · Project Anak Kamar",
+    default: "Project Sejengkal — Cukup maju sedikit.",
+    template: "%s · Project Sejengkal",
   },
   description:
-    "Ruang kecil untuk mulai melakukan sesuatu yang lebih besar. Bikin goal, jalanin challenge, bangun habit, dan catat progress lo — mulai dari kamar.",
-  applicationName: "Project Anak Kamar",
+    "Langkah kecil untuk mulai melakukan sesuatu yang lebih besar. Bikin goal, jalanin challenge, bangun habit, dan catat progress lo — cukup maju sejengkal tiap hari.",
+  applicationName: "Project Sejengkal",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Anak Kamar",
+    title: "Sejengkal",
     statusBarStyle: "default",
   },
   formatDetection: { telephone: false, address: false, email: false },
   openGraph: {
-    title: "Project Anak Kamar — Mulainya dari kamar.",
-    description: "Ruang kecil untuk mulai melakukan sesuatu yang lebih besar.",
+    title: "Project Sejengkal — Cukup maju sedikit.",
+    description: "Langkah kecil untuk mulai melakukan sesuatu yang lebih besar.",
     type: "website",
     url: "/",
-    siteName: "Project Anak Kamar",
+    siteName: "Project Sejengkal",
   },
   twitter: { card: "summary_large_image" },
 };
