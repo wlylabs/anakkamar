@@ -26,7 +26,7 @@ export function InstallBanner() {
           <Logo className="size-6" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">Install Anak Kamar</p>
+          <p className="text-sm font-semibold">Install Sejengkal</p>
           <p className="truncate text-xs text-ink-subtle">Buka kayak app, tetep jalan offline.</p>
         </div>
         <Button size="sm" variant="accent" onClick={() => void install()}>
@@ -49,7 +49,7 @@ export function InstallSection() {
         <div className="min-w-0">
           <h2 className="font-bold tracking-tight">Install ke home screen</h2>
           <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink-muted">
-            Biar Anak Kamar kebuka kayak aplikasi beneran, dan progress lo tetep kesimpen walau
+            Biar Sejengkal kebuka kayak aplikasi beneran, dan progress lo tetep kesimpen walau
             koneksi lagi jelek.
           </p>
         </div>

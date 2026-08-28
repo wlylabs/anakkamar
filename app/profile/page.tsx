@@ -62,8 +62,8 @@ export default function ProfilePage() {
             {initials(profile.name)}
           </div>
           <div>
-            <h1 className="text-display text-2xl">{profile.name || "Anak Kamar"}</h1>
-            <p className="text-sm text-ink-subtle">@{profile.username || "anakkamar"}</p>
+            <h1 className="text-display text-2xl">{profile.name || "Sejengkal"}</h1>
+            <p className="text-sm text-ink-subtle">@{profile.username || "sejengkal"}</p>
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={startEdit} aria-label="Edit profil">
@@ -127,7 +127,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2.5">
               <Sparkles className="size-4 text-accent" aria-hidden />
               <div>
-                <p className="text-sm font-bold">{isAdmin ? "Admin" : isPlus ? "Anak Kamar Plus" : "Akun"}</p>
+                <p className="text-sm font-bold">{isAdmin ? "Admin" : isPlus ? "Sejengkal Plus" : "Akun"}</p>
                 <p className="text-xs text-ink-subtle">
                   {user ? user.email : "Belum masuk — data lo tetep tersimpan di device ini"}
                 </p>

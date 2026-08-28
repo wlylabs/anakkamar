@@ -19,7 +19,9 @@ import type {
 } from "./types";
 import { addDays, todayStr, uid } from "./utils";
 
-const STORAGE_KEY = "anak-kamar:v1";
+const STORAGE_KEY = "sejengkal:v1";
+/** Key used before the rename to Sejengkal; read once so existing local data survives. */
+const LEGACY_STORAGE_KEY = "anak-kamar:v1";
 /** How long to wait after the last edit before pushing state to Supabase. */
 const CLOUD_SYNC_DEBOUNCE_MS = 800;
 
@@ -56,7 +58,8 @@ function initialState(): AppState {
 function loadState(): AppState {
   if (typeof window === "undefined") return initialState();
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw =
+      window.localStorage.getItem(STORAGE_KEY) ?? window.localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!raw) return initialState();
     const parsed = JSON.parse(raw) as Partial<AppState>;
     return mergeIntoAppState(parsed);
@@ -275,8 +278,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         onboarded: true,
         profile: {
           ...s.profile,
-          name: name.trim() || "Anak Kamar",
-          username: s.profile.username || (name.trim() ? name.trim().toLowerCase().replace(/\s+/g, "") : "anakkamar"),
+          name: name.trim() || "Sejengkal",
+          username: s.profile.username || (name.trim() ? name.trim().toLowerCase().replace(/\s+/g, "") : "sejengkal"),
           focusArea,
           smallChange,
           onboardedAt: new Date().toISOString(),

@@ -37,7 +37,7 @@ export default function OnboardingPage() {
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col">
         <div className="mb-8 flex items-center gap-2.5 font-bold tracking-tight">
           <Logo className="size-7" />
-          <span>Anak Kamar</span>
+          <span>Sejengkal</span>
         </div>
 
         <div className="mb-8 flex gap-2">

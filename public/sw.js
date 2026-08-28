@@ -1,4 +1,4 @@
-const CACHE = "anak-kamar-shell-v2";
+const CACHE = "sejengkal-shell-v3";
 const OFFLINE_URL = "/offline";
 const SHELL = [OFFLINE_URL, "/icon.svg", "/manifest.webmanifest"];
 

@@ -27,7 +27,7 @@ export function DataBackup() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `anak-kamar-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `sejengkal-backup-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -49,12 +49,12 @@ export function DataBackup() {
       const text = await file.text();
       const parsed = JSON.parse(text);
       if (!isAppStateShape(parsed)) {
-        setError("File ini bukan backup Anak Kamar yang valid.");
+        setError("File ini bukan backup Sejengkal yang valid.");
         return;
       }
       setPendingImport(parsed);
     } catch {
-      setError("Gagal baca file itu. Pastiin ini file backup .json dari Anak Kamar.");
+      setError("Gagal baca file itu. Pastiin ini file backup .json dari Sejengkal.");
     }
   };
 

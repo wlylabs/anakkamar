@@ -58,7 +58,7 @@ function NewProjectForm() {
         <p className="text-lg font-bold">Project gratis lo udah penuh ({FREE_PROJECT_LIMIT}/{FREE_PROJECT_LIMIT}).</p>
         <p className="mt-2 text-sm text-ink-muted">Upgrade ke Plus buat bikin project unlimited.</p>
         <LinkButton href="/plus" variant="accent" size="lg" className="mt-6">
-          Lihat Anak Kamar Plus
+          Lihat Sejengkal Plus
         </LinkButton>
       </div>
     );

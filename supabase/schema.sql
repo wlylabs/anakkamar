@@ -1,4 +1,4 @@
--- Project Anak Kamar — Plus (one-time upgrade) schema.
+-- Project Sejengkal — Plus (one-time upgrade) schema.
 -- Run this once in the Supabase SQL editor (Project → SQL Editor → New query).
 
 create table if not exists public.profiles (

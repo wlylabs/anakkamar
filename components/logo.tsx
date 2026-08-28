@@ -1,6 +1,6 @@
 /**
- * The original "AK" monogram, kept intact for brand recognition, with an
- * accent card peeking out behind it using the same offset-card technique
+ * The original monogram mark, kept intact through the rename to Sejengkal,
+ * with an accent card peeking out behind it using the same offset-card technique
  * (see --shadow-pop in app/globals.css) that's already the app's signature
  * move on every paper/card element.
  */

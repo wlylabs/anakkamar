@@ -42,7 +42,7 @@ export default function LandingPage() {
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-2.5 font-bold tracking-tight">
           <Logo className="size-7" />
-          <span>Anak Kamar</span>
+          <span>Sejengkal</span>
         </div>
         <LinkButton href="/onboarding" variant="secondary" size="sm" className="hidden sm:inline-flex">
           Masuk
@@ -79,9 +79,9 @@ export default function LandingPage() {
             Buat anak muda Indonesia yang pengen mulai
           </span>
           <h1 className="text-display animate-in-up text-[2.75rem] sm:text-6xl md:text-7xl">
-            Mulainya dari{" "}
+            Cukup maju{" "}
             <span className="relative inline-block text-accent">
-              kamar.
+              sejengkal.
               <svg
                 className="absolute -bottom-1 left-0 w-full text-accent"
                 viewBox="0 0 200 12"
@@ -128,12 +128,12 @@ export default function LandingPage() {
 
       <Reveal>
         <section className="mx-auto max-w-3xl px-6 pb-16 pt-16 text-center">
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Kenapa &ldquo;anak kamar&rdquo;?</h2>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Kenapa &ldquo;sejengkal&rdquo;?</h2>
           <p className="mt-4 text-base leading-relaxed text-ink-muted md:text-lg">
-            Karena banyak hal besar mulainya dari ruang kecil — kamar lo sendiri. Nggak perlu langsung
-            jadi orang paling produktif sedunia. Project Anak Kamar bantu lo gerak dikit-dikit: bikin
-            goal yang masuk akal, jalanin langkah kecil, dan liat progress itu beneran ada — biarpun
-            nggak tiap hari mulus.
+            Sejengkal itu ukuran paling kecil yang masih kehitung — dan hal besar biasanya mulainya
+            dari situ. Nggak perlu langsung jadi orang paling produktif sedunia. Project Sejengkal
+            bantu lo gerak dikit-dikit: bikin goal yang masuk akal, jalanin langkah kecil, dan liat
+            progress itu beneran ada — biarpun nggak tiap hari mulus.
           </p>
         </section>
       </Reveal>
@@ -168,7 +168,7 @@ export default function LandingPage() {
       </Reveal>
 
       <footer className="border-t-2 border-line px-6 py-8 text-center text-sm text-ink-subtle">
-        Project Anak Kamar — Lo udah sejauh ini.
+        Project Sejengkal — Lo udah sejauh ini.
       </footer>
     </div>
   );

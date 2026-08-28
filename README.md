@@ -1,8 +1,8 @@
-# Project Anak Kamar
+# Project Sejengkal
 
-**Mulainya dari kamar.**
+**Cukup maju sedikit.**
 
-Ruang kecil untuk mulai melakukan sesuatu yang lebih besar. Project Anak Kamar adalah web app
+Langkah kecil untuk mulai melakukan sesuatu yang lebih besar. Project Sejengkal adalah web app
 self-development untuk anak muda Indonesia (16–30 tahun) yang bantu lo bergerak lewat langkah
 kecil yang realistis: bikin goal, jalanin challenge, bangun habit, catat progress, dan
 refleksi lewat journal.
@@ -25,8 +25,8 @@ maju sedikit.
   (dari journal).
 - **Explore** — ide project, challenge populer, habit ideas, skill, dan prompt journal.
 - **Profile** — bio, statistik, daftar project, dan achievement.
-- **Anak Kamar Plus** — upgrade sekali bayar (bukan langganan) yang buka batas project/habit
-  gratis. Lihat [Monetisasi](#monetisasi-anak-kamar-plus) di bawah buat setup-nya.
+- **Sejengkal Plus** — upgrade sekali bayar (bukan langganan) yang buka batas project/habit
+  gratis. Lihat [Monetisasi](#monetisasi-sejengkal-plus) di bawah buat setup-nya.
 
 ## Stack
 
@@ -49,7 +49,7 @@ Buka [http://localhost:3000](http://localhost:3000). Tanpa env var, semua fitur 
 habit, challenge, journal) tetap jalan penuh — cuma bagian Plus yang nonaktif dan bilang
 "belum dikonfigurasi".
 
-## Monetisasi (Anak Kamar Plus)
+## Monetisasi (Sejengkal Plus)
 
 Model: **sekali bayar (lifetime), bukan subscription** — Midtrans nggak punya recurring
 otomatis buat QRIS/GoPay/VA (cuma kartu kredit), dan target usernya emang lebih cocok bayar
@@ -73,7 +73,7 @@ Alur teknis (QRIS/GoPay): `/plus` (pricing + sign-in) → user masuk pakai email
 (Supabase Auth, nggak perlu password) → pilih QRIS/GoPay → `POST /api/checkout` bikin Core API
 charge, simpan baris `purchases` berstatus `pending`, balikin URL gambar QR →
 `CustomCheckout` (`components/plus/custom-checkout.tsx`) nampilin QR itu dalam kartu bergaya
-Anak Kamar sendiri (bukan iframe Midtrans) sambil poll `GET /api/checkout/status` tiap beberapa
+Sejengkal sendiri (bukan iframe Midtrans) sambil poll `GET /api/checkout/status` tiap beberapa
 detik → begitu Midtrans call `POST /api/midtrans/webhook`, webhook verifikasi signature, update
 `purchases.status`, dan set `profiles.is_plus = true` — status itu yang dibaca balik sama
 polling di client.

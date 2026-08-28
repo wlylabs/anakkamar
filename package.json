@@ -1,8 +1,8 @@
 {
-  "name": "project-anak-kamar",
+  "name": "project-sejengkal",
   "version": "0.1.0",
   "private": true,
-  "description": "Project Anak Kamar — ruang kecil untuk mulai berkembang.",
+  "description": "Project Sejengkal — langkah kecil untuk mulai berkembang.",
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
