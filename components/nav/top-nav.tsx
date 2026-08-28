@@ -17,13 +17,14 @@ export function TopNav() {
           <Logo className="size-7" />
           <span>Sejengkal</span>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav aria-label="Navigasi utama" className="flex items-center gap-1">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || pathname?.startsWith(item.href + "/");
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "press rounded-[var(--radius)] px-3 py-2 text-sm font-semibold tracking-tight",
                   active ? "bg-ink text-canvas" : "text-ink-muted hover:bg-canvas-alt hover:text-ink",

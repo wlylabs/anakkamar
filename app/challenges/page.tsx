@@ -5,13 +5,14 @@ import Link from "next/link";
 
 import { CategoryBadge } from "@/components/ui/badge";
 import { ProgressBar } from "@/components/ui/progress";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CHALLENGES } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 
 export default function ChallengesPage() {
   const { state, hydrated } = useApp();
-  if (!hydrated) return null;
+  if (!hydrated) return <PageSkeleton className="max-w-5xl" grid="three" cards={6} />;
 
   const joinedActiveIds = new Set(
     state.joinedChallenges.filter((c) => c.status === "berjalan").map((c) => c.challengeId),

@@ -29,8 +29,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      {showNav ? <TopNav /> : null}
-      <main id="main" className={showNav ? "pb-24 md:pb-12" : ""}>
+      {showNav ? (
+        <TopNav />
+      ) : isBare ? null : (
+        /* Whether the nav is *shown* needs the hydrated store, but how much
+           room it takes doesn't — the route alone settles that. Holding the
+           header's height (and the bottom-nav gutter on <main> below) means
+           the page doesn't jump down the instant hydration finishes. */
+        <div className="pt-safe hidden h-16 border-b-2 border-line bg-canvas md:block" aria-hidden />
+      )}
+      <main id="main" className={isBare ? "" : "pb-24 md:pb-12"}>
         <div key={pathname} className="animate-page-in">
           {children}
         </div>
