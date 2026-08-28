@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import {
   activityStreak,
   challengeStats,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/stats";
 import { useApp } from "@/lib/store";
 import { MOOD_OPTIONS } from "@/lib/types";
+import { formatDayID } from "@/lib/utils";
 
 function StatTile({ value, label }: { value: number | string; label: string }) {
   return (
@@ -27,7 +29,7 @@ function StatTile({ value, label }: { value: number | string; label: string }) {
 
 export default function ProgressPage() {
   const { state, hydrated } = useApp();
-  if (!hydrated) return null;
+  if (!hydrated) return <PageSkeleton className="max-w-3xl" grid="three" cards={6} />;
 
   const projects = projectStats(state);
   const challenges = challengeStats(state);
@@ -67,11 +69,12 @@ export default function ProgressPage() {
           <div className="flex items-end justify-between gap-1.5">
             {week.map((d) => {
               const label = new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", {
-                weekday: "narrow",
+                weekday: "short",
               });
               return (
                 <div key={d.date} className="flex flex-1 flex-col items-center gap-1.5">
                   <div
+                    title={`${formatDayID(d.date)} — ${d.active ? "aktif" : "kosong"}`}
                     className="h-12 w-full rounded-[var(--radius)] border-2 border-line"
                     style={{ backgroundColor: d.active ? "var(--positive)" : "var(--canvas-alt)" }}
                   />
@@ -90,7 +93,7 @@ export default function ProgressPage() {
             {month.map((d) => (
               <div
                 key={d.date}
-                title={d.date}
+                title={`${formatDayID(d.date)} — ${d.active ? "aktif" : "kosong"}`}
                 className="aspect-square rounded-[3px] border border-line-soft"
                 style={{ backgroundColor: d.active ? "var(--positive)" : "var(--canvas-alt)" }}
               />
@@ -111,20 +114,24 @@ export default function ProgressPage() {
           <Card>
             <div className="flex items-end justify-between gap-1">
               {mood.map((d) => (
-                <div key={d.date} title={d.date} className="flex flex-1 flex-col items-center gap-1.5">
-                  <div
-                    className="flex w-full items-end justify-center rounded-[var(--radius)] border-2 border-line-soft"
-                    style={{ height: 44 }}
-                  >
+                <div
+                  key={d.date}
+                  title={`${formatDayID(d.date)} — ${
+                    d.mood ? (MOOD_OPTIONS.find((m) => m.value === d.mood)?.label ?? "") : "nggak dicatat"
+                  }`}
+                  className="flex flex-1 flex-col items-center gap-1.5"
+                >
+                  <div className="relative flex h-11 w-full items-end overflow-hidden rounded-[var(--radius)] border-2 border-line-soft">
                     {d.mood ? (
-                      <div
-                        className="flex w-full items-end justify-center rounded-[3px]"
-                        style={{ height: `${(d.mood / 5) * 100}%`, backgroundColor: "var(--accent-soft)" }}
-                      >
-                        <span className="pb-0.5 text-[10px] leading-none">
+                      <>
+                        <div
+                          className="w-full rounded-[3px]"
+                          style={{ height: `${(d.mood / 5) * 100}%`, backgroundColor: "var(--accent-soft)" }}
+                        />
+                        <span className="absolute inset-x-0 bottom-0.5 text-center text-xs leading-none">
                           {MOOD_OPTIONS.find((m) => m.value === d.mood)?.emoji}
                         </span>
-                      </div>
+                      </>
                     ) : null}
                   </div>
                 </div>

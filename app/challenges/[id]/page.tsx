@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProgressBar } from "@/components/ui/progress";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { Stopwatch } from "@/components/ui/stopwatch";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CHALLENGES } from "@/lib/mock-data";
@@ -32,7 +33,7 @@ export default function ChallengeDetailPage() {
     setShowTimer(false);
   }, [params.id]);
 
-  if (!hydrated) return null;
+  if (!hydrated) return <PageSkeleton className="max-w-2xl" cards={3} />;
 
   const template = CHALLENGES.find((c) => c.id === params.id);
   if (!template) {
