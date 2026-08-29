@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LimitBanner } from "@/components/plus/limit-banner";
 import { ProgressBar } from "@/components/ui/progress";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { FREE_PROJECT_LIMIT } from "@/lib/premium";
 import { usePremium } from "@/lib/premium-context";
@@ -23,7 +22,7 @@ const ORDER: ProjectStatus[] = ["berjalan", "belum-mulai", "berhenti-sementara",
 export default function ProjectsPage() {
   const { state, hydrated } = useApp();
   const { isPlus } = usePremium();
-  if (!hydrated) return <PageSkeleton className="max-w-5xl" grid="three" cards={3} />;
+  if (!hydrated) return null;
 
   const atLimit = !isPlus && state.projects.length >= FREE_PROJECT_LIMIT;
 

@@ -10,7 +10,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navigasi utama" className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t-2 border-line bg-surface md:hidden">
+    <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t-2 border-line bg-surface md:hidden">
       <ul className="flex">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href || pathname?.startsWith(item.href + "/");
@@ -19,7 +19,6 @@ export function BottomNav() {
             <li key={item.href} className="flex-1">
               <Link
                 href={item.href}
-                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex flex-col items-center gap-0.5 py-2.5 text-[9.5px] font-semibold uppercase tracking-wide",
                   active ? "text-accent" : "text-ink-subtle",

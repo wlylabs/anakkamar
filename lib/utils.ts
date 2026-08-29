@@ -20,12 +20,6 @@ export function formatDateID(dateStr: string) {
   return d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** Short weekday + date, for day cells too small to carry a visible label. */
-export function formatDayID(dateStr: string) {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short" });
-}
-
 export function daysBetween(a: string, b: string) {
   const ms = new Date(b + "T00:00:00").getTime() - new Date(a + "T00:00:00").getTime();
   return Math.round(ms / 86_400_000);

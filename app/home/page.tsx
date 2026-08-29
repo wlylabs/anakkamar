@@ -7,13 +7,12 @@ import { CategoryBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CHALLENGES } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 import { activityStreak, challengeTitle, todayCompletion, weeklyActivity } from "@/lib/stats";
 import { PROJECT_STATUS_LABEL } from "@/lib/types";
-import { formatDateID, formatDayID } from "@/lib/utils";
+import { formatDateID } from "@/lib/utils";
 
 function greeting() {
   const hour = new Date().getHours();
@@ -26,7 +25,7 @@ function greeting() {
 export default function HomePage() {
   const { state, hydrated, toggleHabitDate, isHabitDoneOn, toggleChallengeDay } = useApp();
 
-  if (!hydrated) return <PageSkeleton className="max-w-5xl" grid="two" cards={4} />;
+  if (!hydrated) return null;
 
   const { profile } = state;
   const currentGoal =
@@ -228,11 +227,10 @@ export default function HomePage() {
           </div>
           <div className="mt-4 flex items-end justify-between gap-1.5">
             {week.map((d) => {
-              const label = new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "short" });
+              const label = new Date(d.date + "T00:00:00").toLocaleDateString("id-ID", { weekday: "narrow" });
               return (
                 <div key={d.date} className="flex flex-1 flex-col items-center gap-1.5">
                   <div
-                    title={`${formatDayID(d.date)} — ${d.active ? "aktif" : "kosong"}`}
                     className="h-9 w-full rounded-[var(--radius)] border-2 border-line"
                     style={{ backgroundColor: d.active ? "var(--positive)" : "var(--canvas-alt)" }}
                   />

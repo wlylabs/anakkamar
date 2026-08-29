@@ -9,7 +9,6 @@ import { CategoryBadge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ProgressBar } from "@/components/ui/progress";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { CATEGORY_COLOR } from "@/lib/category";
 import { CATEGORY_TIPS } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
@@ -24,7 +23,7 @@ export default function ProjectDetailPage() {
   const { state, hydrated, toggleMilestone, setProjectStatus, deleteProject } = useApp();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  if (!hydrated) return <PageSkeleton className="max-w-2xl" cards={3} />;
+  if (!hydrated) return null;
 
   const project = state.projects.find((p) => p.id === params.id);
   if (!project) {

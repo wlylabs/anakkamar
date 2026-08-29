@@ -328,27 +328,6 @@
     }
   }
 
-  /* A disabled control shouldn't look pressable, so drop the hard offset
-     shadow that reads as "this lifts off the page". It lives in the utilities
-     layer so it wins over the .shadow-pop utility the buttons carry. */
-  .press:disabled {
-    box-shadow: none;
-  }
-
-  .animate-skeleton {
-    animation: skeleton-pulse 1.4s ease-in-out infinite;
-  }
-
-  @keyframes skeleton-pulse {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.45;
-    }
-  }
-
   .animate-pop {
     animation: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
@@ -410,7 +389,6 @@
   @media (prefers-reduced-motion: reduce) {
     .animate-float,
     .animate-float-delayed,
-    .animate-skeleton,
     .marquee-track {
       animation: none;
     }

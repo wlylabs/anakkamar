@@ -9,7 +9,6 @@ import { InstallSection } from "@/components/pwa/install-prompt";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input, Label, Textarea } from "@/components/ui/field";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { ACHIEVEMENTS } from "@/lib/mock-data";
 import { usePremium } from "@/lib/premium-context";
 import { activityStreak, challengeStats, projectStats } from "@/lib/stats";
@@ -34,7 +33,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
 
-  if (!hydrated) return <PageSkeleton className="max-w-2xl" cards={3} />;
+  if (!hydrated) return null;
 
   const { profile } = state;
   const projects = projectStats(state);
