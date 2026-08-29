@@ -9,13 +9,12 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/field";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { Stopwatch } from "@/components/ui/stopwatch";
 import { HABIT_IDEAS } from "@/lib/mock-data";
 import { FREE_HABIT_LIMIT } from "@/lib/premium";
 import { usePremium } from "@/lib/premium-context";
 import { useApp } from "@/lib/store";
-import { addDays, cn, formatDayID, todayStr } from "@/lib/utils";
+import { addDays, cn, todayStr } from "@/lib/utils";
 
 const WINDOW_DAYS = 14;
 
@@ -27,7 +26,7 @@ export default function HabitsPage() {
   const [name, setName] = useState("");
   const [timerFor, setTimerFor] = useState<string | null>(null);
 
-  if (!hydrated) return <PageSkeleton className="max-w-3xl" cards={3} />;
+  if (!hydrated) return null;
 
   const activeHabits = state.habits.filter((h) => !h.archived);
   const atLimit = !isPlus && activeHabits.length >= FREE_HABIT_LIMIT;
@@ -162,7 +161,6 @@ export default function HabitsPage() {
                   {days.map((date) => {
                     const done = isHabitDoneOn(h.id, date);
                     const isToday = date === today;
-                    const dayLabel = isToday ? "hari ini" : formatDayID(date);
                     return (
                       <button
                         key={date}
@@ -170,15 +168,11 @@ export default function HabitsPage() {
                         onClick={() => toggleHabitDate(h.id, date)}
                         className={cn(
                           "press flex aspect-square items-center justify-center rounded-[4px] border-2",
-                          done ? "bg-positive text-accent-ink" : "bg-canvas-alt",
-                          // Today gets the accent border in both states. It used
-                          // to be a plain ink border, which is invisible once the
-                          // day is checked off — exactly when you're looking for it.
-                          isToday ? "border-accent" : done ? "border-line" : "border-line-soft",
+                          done ? "border-line bg-positive text-accent-ink" : "border-line-soft bg-canvas-alt",
+                          isToday && !done && "border-line",
                         )}
                         aria-pressed={done}
-                        aria-label={`${h.name} — ${dayLabel}`}
-                        title={dayLabel}
+                        aria-label={date}
                       >
                         {done ? <Check className="size-3 animate-pop" aria-hidden /> : null}
                       </button>

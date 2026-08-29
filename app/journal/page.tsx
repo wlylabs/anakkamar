@@ -9,7 +9,6 @@ import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Textarea } from "@/components/ui/field";
-import { PageSkeleton } from "@/components/ui/skeleton";
 import { JOURNAL_PROMPTS } from "@/lib/mock-data";
 import { useApp } from "@/lib/store";
 import { MOOD_OPTIONS, type MoodValue } from "@/lib/types";
@@ -31,7 +30,7 @@ export default function JournalPage() {
 
   const prompt = useMemo(() => JOURNAL_PROMPTS[promptIndex]!, [promptIndex]);
 
-  if (!hydrated) return <PageSkeleton className="max-w-2xl" cards={3} />;
+  if (!hydrated) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,7 +117,7 @@ export default function JournalPage() {
                   <button
                     type="button"
                     onClick={() => setDeleteTarget(entry.id)}
-                    className="press flex size-9 shrink-0 items-center justify-center rounded-[var(--radius)] text-ink-subtle hover:text-critical"
+                    className="press flex size-7 shrink-0 items-center justify-center rounded-[var(--radius)] text-ink-subtle hover:text-critical"
                     aria-label="Hapus catatan"
                   >
                     <Trash2 className="size-3.5" aria-hidden />

@@ -23,7 +23,7 @@ const sizeClasses: Record<Size, string> = {
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {
   return cn(
-    "press inline-flex shrink-0 items-center justify-center whitespace-nowrap font-semibold tracking-tight disabled:pointer-events-none disabled:opacity-55",
+    "press inline-flex shrink-0 items-center justify-center whitespace-nowrap font-semibold tracking-tight disabled:pointer-events-none disabled:opacity-40",
     variantClasses[variant],
     sizeClasses[size],
     className,
