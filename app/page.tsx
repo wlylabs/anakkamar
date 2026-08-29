@@ -44,9 +44,6 @@ export default function LandingPage() {
           <Logo className="size-7" />
           <span>Sejengkal</span>
         </div>
-        <LinkButton href="/plus" variant="secondary" size="sm" className="hidden sm:inline-flex">
-          Masuk
-        </LinkButton>
       </header>
 
       <section className="relative overflow-hidden px-6 pb-20 pt-10 md:pb-28 md:pt-16">
@@ -101,13 +98,10 @@ export default function LandingPage() {
           <p className="animate-in-up mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-muted md:text-xl">
             Ruang kecil untuk mulai melakukan sesuatu yang lebih besar.
           </p>
-          <div className="animate-in-up mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="animate-in-up mt-9 flex justify-center">
             <LinkButton href="/onboarding" variant="accent" size="lg" className="group w-full sm:w-auto">
               Mulai Project Gue
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
-            </LinkButton>
-            <LinkButton href="/plus" variant="secondary" size="lg" className="w-full sm:w-auto">
-              Masuk
             </LinkButton>
           </div>
           <p className="animate-in-up mt-4 text-sm text-ink-subtle">
